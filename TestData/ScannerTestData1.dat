@@ -1,0 +1,6 @@
+begin -- SOMETHING UNUSUAL 
+read(A1, New_A, D, B); 
+    C:= A1 +(New_A - D) - 75;  
+    New_C:=((B - (7)+(C+D))) - (3 - A1); -- STUPID FORMULA  
+write(C, A1+New_C); -- WHAT ABOUT := B+D; 
+end

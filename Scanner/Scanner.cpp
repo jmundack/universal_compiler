@@ -3,6 +3,7 @@
 #include <iostream>
 #include <locale>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -42,6 +43,11 @@ vector<Token> Scanner::GetTokens() const
 {
    vector<Token> tokens;
    ifstream inFile(_Filename.c_str());
+   if (!inFile.good())
+   {
+     cerr << "Failed to open file : " << _Filename << endl;
+     return tokens;
+   }
    while (inFile.good() && !inFile.eof())
    {
      char c = '*';
@@ -129,10 +135,14 @@ vector<Token> Scanner::GetTokens() const
 Token Scanner::_GetTokenForString(const std::string &s) const
 {
   Token token = Id;
-  if (s == "begin")   token = BeginSym;
-  else if (s == "end")   token = EndSym;
-  else if (s == "write")   token = WriteSym;
-  else if (s == "read")   token = ReadSym;
+  string convertedToLower;
+  transform(s.begin(), s.end(), convertedToLower.begin(), ::tolower);
+  if (convertedToLower == "begin")   token = BeginSym;
+  else if (convertedToLower == "end")   token = EndSym;
+  else if (convertedToLower == "write")   token = WriteSym;
+  else if (convertedToLower == "read")   token = ReadSym;
+#if DEBUG
   cout << "*** returning " << token << " for str : " << s << endl;
+#endif
   return token;
 }

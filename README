@@ -1,0 +1,10 @@
+How to build:
+ --> cd build
+ --> ./bootstrap.sh
+
+To run Test (file name can be any file in the Test data directory)
+ --> ./build/debug/bin/ScannerTest <filename>
+
+Updated source code can be retrieved from
+git://github.com/jmundack/universal_compiler.git
+ 

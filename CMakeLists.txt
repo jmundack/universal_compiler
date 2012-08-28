@@ -4,5 +4,8 @@ project (universal_compiler)
 set(CMAKE_INSTALL_PREFIX "debug")
 message("********** Building ${CMAKE_PROJECT_NAME} **********")
 
+add_definitions(-Wall -Werror) # enable all warnings and mark warnings as errors
+add_definitions(-O3)  # enable optimizations
+
 add_subdirectory (Scanner)
 add_subdirectory (Test) 
