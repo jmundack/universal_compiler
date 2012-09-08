@@ -39,9 +39,9 @@ Scanner::Scanner(const string &filename):_Filename(filename)
    cout << "Scanner initialized for : " << _Filename << endl;
 }
 
-vector<Token> Scanner::GetTokens() const
+Tokens Scanner::GetTokens() const
 {
-   vector<Token> tokens;
+   Tokens tokens;
    ifstream inFile(_Filename.c_str());
    if (!inFile.good())
    {

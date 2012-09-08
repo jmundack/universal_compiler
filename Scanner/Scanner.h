@@ -1,5 +1,5 @@
 #include <string>
-#include <vector>
+#include <deque>
 
 enum Token          // enums representing all the vlaid tokens
 {
@@ -26,6 +26,7 @@ enum Token          // enums representing all the vlaid tokens
  */
 std::ostream& operator<< (std::ostream &out, const Token token);
 
+typedef std::deque<Token> Tokens;
 
 /**
  * \brief Class generated tokens from an input file.
@@ -42,7 +43,7 @@ public:
     * \brief Returns a vector of all the tokens scanned from the file
     *        passed in.
     */
-   std::vector<Token> GetTokens() const;
+   Tokens GetTokens() const;
 private:
    /**
     * \brief Helper function to convert a string to a token

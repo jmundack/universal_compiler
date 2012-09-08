@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Scanner.h"
+#include "MicroParser.h"
 
 using namespace std;
 
@@ -11,10 +11,7 @@ int main ( int argc, char *argv[] )
     cerr << "Usage : " << argv[0] << " <file to parse>" << endl;
     return 1;
   }
-  Scanner s(argv[1]);
-  Tokens tokens(s.GetTokens());
-  for (Tokens::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr)
-    cout << *itr;
-  cout << endl;
+  MicroParser microParser(argv[1]);
+  microParser.Parse();
   return 0;
 }
