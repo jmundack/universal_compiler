@@ -135,12 +135,10 @@ vector<Token> Scanner::GetTokens() const
 Token Scanner::_GetTokenForString(const std::string &s) const
 {
   Token token = Id;
-  string convertedToLower;
-  transform(s.begin(), s.end(), convertedToLower.begin(), ::tolower);
-  if (convertedToLower == "begin")   token = BeginSym;
-  else if (convertedToLower == "end")   token = EndSym;
-  else if (convertedToLower == "write")   token = WriteSym;
-  else if (convertedToLower == "read")   token = ReadSym;
+  if (s == "begin")   token = BeginSym;
+  else if (s == "end")   token = EndSym;
+  else if (s == "write")   token = WriteSym;
+  else if (s == "read")   token = ReadSym;
 #if DEBUG
   cout << "*** returning " << token << " for str : " << s << endl;
 #endif

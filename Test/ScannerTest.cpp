@@ -14,6 +14,7 @@ int main ( int argc, char *argv[] )
   Scanner s(argv[1]);
   vector<Token> tokens(s.GetTokens());
   for (size_t i = 0; i < tokens.size(); i++)
-    cout << tokens.at(i) << endl;
+    cout << tokens.at(i);
+  cout << endl;
   return 0;
 }
