@@ -86,10 +86,23 @@ vector<Token> Scanner::GetTokens() const
          {
            while (isdigit(inFile.peek()))
            {
-             char nextChar;
-             inFile.get(nextChar);
+              char nextChar;
+              inFile.get(nextChar);
            }
-           tokens.push_back(IntLiteral);
+           if (isalnum(inFile.peek()))
+           {
+              while (true)
+              {
+                 char nextChar = inFile.peek();
+                 if (isalnum(nextChar) || nextChar == '_')
+                    inFile >> nextChar;
+                 else
+                    break;
+              }
+              tokens.push_back(Invalid);
+           }
+           else
+              tokens.push_back(IntLiteral);
          }
          else if (c == ':')
          {
@@ -144,3 +157,4 @@ Token Scanner::_GetTokenForString(const std::string &s) const
 #endif
   return token;
 }
+
