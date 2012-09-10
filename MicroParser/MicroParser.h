@@ -23,6 +23,6 @@ private:
    void _AddOp();
 
    void _PrintState() const;
-   Token _CurrentToken;
    Tokens _Tokens;
+   bool _StateValid;
 };

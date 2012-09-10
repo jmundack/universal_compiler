@@ -3,7 +3,7 @@
 
 using namespace std;
 
-MicroParser::MicroParser(const std::string &filename)
+MicroParser::MicroParser(const std::string &filename):_StateValid(false)
 {
    _Tokens = Scanner(filename).GetTokens();
 #ifdef DEBUG
@@ -15,26 +15,41 @@ MicroParser::MicroParser(const std::string &filename)
 
 void MicroParser::Parse()
 {
+   _StateValid = true;
    _SystemGoal();
+   if (!_Tokens.empty()) 
+   {
+      cerr << "Done paring but still have the following tokens left " << endl;
+      for (Tokens::const_iterator itr = _Tokens.begin(); itr != _Tokens.end(); ++itr)
+         cout << *itr << endl;
+   }
 }
 
 void MicroParser::_Match(const Token legalToken)
 {
-   _CurrentToken = _Tokens.front();
-   if (_CurrentToken != legalToken)
-      cerr << "Failed to match token : " << _CurrentToken << endl;
-   cout << legalToken;
+   if (!_StateValid) return;
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
+   if (_Tokens.front() != legalToken)
+   {
+      cerr << "Failed to match token expected : "<< legalToken << " but got " << _Tokens.front() << "instead " << endl;
+      _StateValid = false;
+   }
+   cout << legalToken << endl;
    _Tokens.pop_front();
 }
 
 void MicroParser::_SystemGoal()
 {
+   if (!_StateValid) return;
+   cout << " Parsing system_goal" << endl;
    _Program();
    _Match(EofSym);
 }
 
 void MicroParser::_Program()
 {
+   if (!_StateValid) return;
+   cout << " Parsing program" << endl;
    _Match(BeginSym);
    _StatementList();
    _Match(EndSym);
@@ -42,7 +57,10 @@ void MicroParser::_Program()
 
 void MicroParser::_StatementList()
 {
+   if (!_StateValid) return;
+   cout << " Parsing statement_list" << endl;
    _Statement();
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    switch(_Tokens.front())
    {
       case Id:
@@ -57,6 +75,9 @@ void MicroParser::_StatementList()
 
 void MicroParser::_Statement()
 {
+   if (!_StateValid) return;
+   cout << " Parsing statement" << endl;
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    switch(_Tokens.front())
    {
       case Id:
@@ -81,13 +102,17 @@ void MicroParser::_Statement()
          break;
       default:
          cerr << "Fail! " << endl;
+         _StateValid = false;
          break;
    }
 }
 
 void MicroParser::_IdList()
 {
+   if (!_StateValid) return;
+   cout << " Parsing id_list" << endl;
    _Ident();
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    if (_Tokens.front() == Comma)
    {
       _Match(Comma);
@@ -97,7 +122,10 @@ void MicroParser::_IdList()
 
 void MicroParser::_ExpressionList()
 {
+   if (!_StateValid) return;
+   cout << " Parsing expression_list" << endl;
    _Expression();
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    if (_Tokens.front() == Comma)
    {
       _Match(Comma);
@@ -107,7 +135,10 @@ void MicroParser::_ExpressionList()
 
 void MicroParser::_Expression()
 {
+   if (!_StateValid) return;
+   cout << " Parsing expression" << endl;
    _Primary();
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    switch (_Tokens.front())
    {
       case PlusOp:
@@ -122,6 +153,9 @@ void MicroParser::_Expression()
 
 void MicroParser::_Primary()
 {
+   if (!_StateValid) return;
+   cout << " Parsing primary" << endl;
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    switch(_Tokens.front())
    {
       case LParen:
@@ -136,17 +170,23 @@ void MicroParser::_Primary()
          _Match(IntLiteral);
          break;
       default:
-         cerr << "fail" << endl;
+         cerr << "fail -- expected LParen | Id | IntLiteral but got " << _Tokens.front() << endl;
+         _StateValid = false;
+         break;
    }
 }
 
 void MicroParser::_Ident()
 {
+   if (!_StateValid) return;
+   cout << " Parsing ident" << endl;
    _Match(Id);
 }
 
 void MicroParser::_AddOp()
 {
+   cout << " Parsing add_op" << endl;
+   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    switch (_Tokens.front())
    {
       case PlusOp:
@@ -154,6 +194,8 @@ void MicroParser::_AddOp()
          _Match(_Tokens.front());
          break;
       default:
-         cerr << "fail" << endl;
+         cerr << "fail -- expected PlusOp | MinusOp but got " << _Tokens.front() << endl;
+         _StateValid = false;
+         break;
    }
 }

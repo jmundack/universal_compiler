@@ -2,9 +2,17 @@ How to build:
  --> cd build
  --> ./bootstrap.sh
 
+Assignment 1
 To run Test (file name can be any file in the Test data directory)
  --> ./build/debug/bin/ScannerTest <filename>
 
+Assignment 2
+To run Test (file name can be any file in the Test data directory)
+ --> ./build/debug/bin/MicroParserTest <filename>
+
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
- 
+
+Credits
+-- Algorithms used in these implementations have been obtained from
+   stilman-strategies website (written by Prof Boris Stilman for Universal Compiler class) 
