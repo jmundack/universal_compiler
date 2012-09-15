@@ -22,7 +22,11 @@ private:
    void _Ident();
    void _AddOp();
 
-   void _PrintState() const;
+   void _PrintValidation();
    Tokens _Tokens;
    bool _StateValid;
+
+   typedef std::map<std::string, std::deque<std::string> > Tracker;
+   Tracker _Tracker;
+
 };
