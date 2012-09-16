@@ -3,14 +3,20 @@
 
 using namespace std;
 
-MicroParser::MicroParser(const std::string &filename):_StateValid(false)
+string _GenerateOutputFilename(const string &inputFilename)
 {
-   _Tokens = Scanner(filename).GetTokens();
-#ifdef DEBUG
-  for (Tokens::const_iterator itr = _Tokens.begin(); itr != _Tokens.end(); ++itr)
-    cout << *itr;
-  cout << endl;
-#endif
+   string outputFilename = inputFilename;
+   const size_t pos = inputFilename.find_last_of('/');
+   if (pos != string::npos)
+   {
+      outputFilename = inputFilename.substr(pos+1);
+   }
+   outputFilename += ".out";
+   return outputFilename;
+}
+
+MicroParser::MicroParser(const std::string &filename):_StateValid(false), _Scanner(filename),_Generator(_GenerateOutputFilename(filename))
+{
 }
 
 void MicroParser::_PrintValidation()
@@ -41,11 +47,13 @@ void MicroParser::_PrintValidation()
 void MicroParser::Parse()
 {
    _StateValid = true;
+   _Scanner.ReadNextToken();
    _SystemGoal();
-   if (!_Tokens.empty()) 
+   Tokens tokens = _Scanner.GetTokens();
+   if (!tokens.empty()) 
    {
       cerr << "Done paring but still have the following tokens left " << endl;
-      for (Tokens::const_iterator itr = _Tokens.begin(); itr != _Tokens.end(); ++itr)
+      for (Tokens::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr)
          cout << *itr << endl;
    }
    _PrintValidation();
@@ -54,14 +62,13 @@ void MicroParser::Parse()
 void MicroParser::_Match(const Token legalToken)
 {
    if (!_StateValid) return;
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
-   if (_Tokens.front() != legalToken)
+   if (_Scanner.GetNextToken() != legalToken)
    {
-      cerr << "Failed to match token expected : "<< legalToken << " but got " << _Tokens.front() << "instead " << endl;
+      cerr << "Failed to match token expected : "<< legalToken << " but got " << _Scanner.GetNextToken() << "instead " << endl;
       _StateValid = false;
    }
-   cout << legalToken << endl;
-   _Tokens.pop_front();
+   cout << "Legal Token : " << legalToken << endl;
+   _Scanner.ReadNextToken();
 }
 
 void MicroParser::_SystemGoal()
@@ -71,6 +78,7 @@ void MicroParser::_SystemGoal()
    cout << " Parsing system_goal" << endl;
    _Program();
    _Match(EofSym);
+   _Generator.Finish();
 }
 
 void MicroParser::_Program()
@@ -78,6 +86,7 @@ void MicroParser::_Program()
    if (!_StateValid) return;
    cout << " Parsing program" << endl;
    _Tracker["<program>"].push_back("begin <statement_list> end");
+   _Generator.Start();
    _Match(BeginSym);
    _StatementList();
    _Match(EndSym);
@@ -90,8 +99,7 @@ void MicroParser::_StatementList()
    const size_t pos = _Tracker["<statement_list>"].size();
    _Statement();
    string s = "<statement>";
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
-   switch(_Tokens.front())
+   switch(_Scanner.GetNextToken())
    {
       case Id:
       case ReadSym:
@@ -109,15 +117,16 @@ void MicroParser::_Statement()
 {
    if (!_StateValid) return;
    cout << " Parsing statement" << endl;
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    const size_t pos = _Tracker["<statement>"].size();
    string s;
-   switch(_Tokens.front())
+   ExpressionRec source, target;
+   switch(_Scanner.GetNextToken())
    {
       case Id:
-         _Ident();
+         _Ident(target);
          _Match(AssignOp);
-         _Expression();
+         _Expression(source);
+         _Generator.Assign(source, target);
          _Match(SemiColon);
          s += "<ident> := <expression>;";
          break;
@@ -148,12 +157,13 @@ void MicroParser::_Statement()
 void MicroParser::_IdList()
 {
    if (!_StateValid) return;
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    cout << " Parsing id_list" << endl;
    const size_t pos = _Tracker["<id_list>"].size();
-   _Ident();
+   ExpressionRec identifier;
+   _Ident(identifier);
+   _Generator.ReadID(identifier);
    string s = "<ident>";
-   if (_Tokens.front() == Comma)
+   if (_Scanner.GetNextToken() == Comma)
    {
       _Match(Comma);
       _IdList();
@@ -166,11 +176,12 @@ void MicroParser::_ExpressionList()
 {
    if (!_StateValid) return;
    cout << " Parsing expression_list" << endl;
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    const size_t pos = _Tracker["<expression_list>"].size();
-   _Expression();
+   ExpressionRec e;
+   _Expression(e);
+   _Generator.WriteID(e);
    string s = "<expression>";
-   if (_Tokens.front() == Comma)
+   if (_Scanner.GetNextToken() == Comma)
    {
       _Match(Comma);
       _ExpressionList();
@@ -179,84 +190,89 @@ void MicroParser::_ExpressionList()
    _Tracker["<expression_list>"].insert(_Tracker["<expression_list>"].begin() + pos, s);
 }
 
-void MicroParser::_Expression()
+void MicroParser::_Expression(ExpressionRec &e)
 {
    if (!_StateValid) return;
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
-   cout << " Parsing expression -- next token : " << _Tokens.front() << endl;
+   cout << " Parsing expression -- next token : " << _Scanner.GetNextToken() << endl;
    const size_t pos = _Tracker["<expression>"].size();
-   
-   _Primary();
+  
+   ExpressionRec e1, e2;
+   OperationRec op;
+   _Primary(e1);
    string s = "<primary>";
-   switch (_Tokens.front())
+   switch (_Scanner.GetNextToken())
    {
       case PlusOp:
       case MinusOp:
-         _AddOp();
-         _Expression();
+         _AddOp(op);
+         _Expression(e2);
+         e = _Generator.GenerateInFix(e1,op,e2);
          s += "<add_op> <expression>";
          break;
       default:
+         e = e1;
          break;
    }
    _Tracker["<expression>"].insert(_Tracker["<expression>"].begin() + pos, s);
 }
 
-void MicroParser::_Primary()
+void MicroParser::_Primary(ExpressionRec &e)
 {
    if (!_StateValid) return;
    cout << " Parsing primary" << endl;
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
    const size_t pos = _Tracker["<primary>"].size();
    string s;
-   switch(_Tokens.front())
+   switch(_Scanner.GetNextToken())
    {
       case LParen:
          _Match(LParen);
-         _Expression();
+         _Expression(e);
          _Match(RParen);
          s = "(<expression>)";
          break;
       case Id:
-         _Ident();
+         _Ident(e);
          s = "<ident>";
          break;
       case IntLiteral:
+         _Generator.ProcessLiteral(_Scanner.GetBuffer(), e);
          _Match(IntLiteral);
          s = "IntLiteral";
          break;
       default:
-         cerr << "fail -- expected LParen | Id | IntLiteral but got " << _Tokens.front() << endl;
+         cerr << "fail -- expected LParen | Id | IntLiteral but got " << _Scanner.GetNextToken() << endl;
          _StateValid = false;
          break;
    }
    _Tracker["<primary>"].insert(_Tracker["<primary>"].begin() + pos, s);
 }
 
-void MicroParser::_Ident()
+void MicroParser::_Ident(ExpressionRec &e)
 {
    if (!_StateValid) return;
    cout << " Parsing ident" << endl;
    _Tracker["<ident>"].push_back("Id");
+   _Generator.ProcessID(_Scanner.GetBuffer(), e);
    _Match(Id);
 }
 
-void MicroParser::_AddOp()
+void MicroParser::_AddOp(OperationRec &op)
 {
    cout << " Parsing add_op" << endl;
-   if (_Tokens.empty()) { cerr << "Ran out of tokens" << endl; return; }
-   switch (_Tokens.front())
+   switch (_Scanner.GetNextToken())
    {
       case PlusOp:
          _Tracker["<add_op>"].push_back("+");
-         _Match(_Tokens.front());
+         _Match(_Scanner.GetNextToken());
+         _Generator.ProcessOperationRec(PlusOp, op);
          break;
       case MinusOp:
          _Tracker["<add_op>"].push_back("-");
-         _Match(_Tokens.front());
+         _Match(_Scanner.GetNextToken());
+         _Generator.ProcessOperationRec(MinusOp, op);
          break;
       default:
-         cerr << "fail -- expected PlusOp | MinusOp but got " << _Tokens.front() << endl;
+         cerr << "fail -- expected PlusOp | MinusOp but got " << _Scanner.GetNextToken() << endl;
          _StateValid = false;
          break;
    }

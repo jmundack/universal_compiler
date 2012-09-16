@@ -7,142 +7,141 @@
 
 using namespace std;
 
-ostream& operator<< (std::ostream &os , const Token token)
-{
-  string s;
-  switch (token)
-  {
-    case Invalid : s = "Invalid"; break;
-    case BeginSym : s = "BeginSym"; break;
-    case EndSym : s = "EndSym"; break;
-    case ReadSym : s = "ReadSym"; break;
-    case WriteSym : s = "WriteSym"; break;
-    case Id : s = "Id"; break;
-    case IntLiteral : s = "IntLiteral"; break;
-    case LParen : s = "LParen"; break;
-    case RParen : s = "RParen"; break;
-    case SemiColon : s = "SemiColon"; break;
-    case Comma : s = "Comma"; break;
-    case AssignOp : s = "AssignOp"; break;
-    case PlusOp : s = "PlusOp"; break;
-    case MinusOp : s = "MinusOp"; break;
-    case EofSym : s = "EofSym"; break;
-    case Max : s = "Max"; break;
-    default:break;
-  }
-  os << "<" << s << ">";
-  return os;
-}
-
-Scanner::Scanner(const string &filename):_Filename(filename) 
+Scanner::Scanner(const string &filename):_Filename(filename), _InFile(filename.c_str()), _NextToken(Invalid)
 {
    cout << "Scanner initialized for : " << _Filename << endl;
 }
 
-Tokens Scanner::GetTokens() const
+Tokens Scanner::GetTokens()
 {
    Tokens tokens;
-   ifstream inFile(_Filename.c_str());
-   if (!inFile.good())
+   if (!_InFile.good())
    {
      cerr << "Failed to open file : " << _Filename << endl;
      return tokens;
    }
-   while (inFile.good() && !inFile.eof())
+   while (_InFile.good() && !_InFile.eof())
    {
-     char c = '*';
-     inFile.get(c);
-     if (inFile.eof()) break;
+      ReadNextToken();
+      tokens.push_back(_NextToken);
+   }
+   return tokens;
+}
+
+void Scanner::ReadNextToken()
+{
+   Token token = Invalid;
+   string s;
+READ:
+   char c = '*';
+   _InFile.get(c);
+   if (_InFile.eof())
+   {
+     token = EofSym;
+     s = '$';
+   }
+   else
+   {
+      if (c == '\t' || c == '\n' || c == ' ')
+        goto READ;
      switch (c)
      {
        case '\t': break;
        case '\n': break;
        case ' ': break;
-       case '(' : tokens.push_back(LParen); break;
-       case ')' : tokens.push_back(RParen); break;
-       case ';' : tokens.push_back(SemiColon); break;
-       case ',' : tokens.push_back(Comma); break;
-       case '+' : tokens.push_back(PlusOp); break;
+       case '(' : s = c; token = LParen; break;
+       case ')' : s = c; token = RParen; break;
+       case ';' : s = c; token = SemiColon; break;
+       case ',' : s = c; token = Comma; break;
+       case '+' : s = c; token = PlusOp; break;
        default:
        {
          if (isalpha(c))
          {
-           string s;
            s += c;
            while (true)
            {
-             char nextChar = inFile.peek();
+             char nextChar = _InFile.peek();
              if (isalnum(nextChar) || nextChar == '_')
              {
-               inFile >> nextChar;
+               _InFile >> nextChar;
                s += nextChar;
              }
              else
                break;
            }
-           tokens.push_back(_GetTokenForString(s));
+           token = _GetTokenForString(s);
          }
          else if (isdigit(c))
          {
-           while (isdigit(inFile.peek()))
+            s = c;
+           while (isdigit(_InFile.peek()))
            {
               char nextChar;
-              inFile.get(nextChar);
+              _InFile.get(nextChar);
+              s += nextChar;
            }
-           if (isalnum(inFile.peek()))
+           if (isalnum(_InFile.peek()))
            {
               while (true)
               {
-                 char nextChar = inFile.peek();
+                 char nextChar = _InFile.peek();
                  if (isalnum(nextChar) || nextChar == '_')
-                    inFile >> nextChar;
+                 {
+                    _InFile >> nextChar;
+                    s += nextChar;
+                 }
                  else
                     break;
               }
-              tokens.push_back(Invalid);
+              token = Invalid;
            }
            else
-              tokens.push_back(IntLiteral);
+              token = IntLiteral;
          }
          else if (c == ':')
          {
-           if (inFile.peek() == '=')
+            s = c;
+           if (_InFile.peek() == '=')
            {
              char n;
-             inFile.get(n);
-             tokens.push_back(AssignOp);
+             _InFile.get(n);
+             s += n;
+             token = AssignOp;
            }
            else
            {
-             cerr << ": followed by " << inFile.peek() << " -- hex : " << hex << inFile.peek() << endl;
-             tokens.push_back(Invalid);
+             cerr << ": followed by " << _InFile.peek() << " -- hex : " << hex << _InFile.peek() << endl;
+             token = Invalid;
            }
          }
          else if (c == '-')
          {
-           if (inFile.peek() == '-')
+           if (_InFile.peek() == '-')
            {
              char n = '-';
              while (n != '\n')
-               inFile.get(n);
-
+               _InFile.get(n);
+             goto READ;
            }
            else
-             tokens.push_back(MinusOp);
+           {
+              s = '-';
+              token = MinusOp;
+           }
          }
          else
          {
            cerr << "Unexpected char : "  << c << " -- hex : " << hex << (int)c << endl;
-           tokens.push_back(Invalid);
+           token = Invalid;
          }
          break;
        }
      }
    }
-   if (inFile.eof())
-     tokens.push_back(EofSym);
-
-   return tokens;
+   _Buffer = s;
+   _NextToken = token;
+   cout << "Token : " << _NextToken << " buffer --> " << _Buffer << endl;
 }
 
 Token Scanner::_GetTokenForString(const std::string &s) const

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scanner.h"
+#include "Generator.h"
 #include <map>
 #include <functional>
 
@@ -17,16 +18,16 @@ private:
    void _Statement();
    void _IdList();
    void _ExpressionList();
-   void _Expression();
-   void _Primary();
-   void _Ident();
-   void _AddOp();
+   void _Expression(ExpressionRec &e);
+   void _Primary(ExpressionRec &e);
+   void _Ident(ExpressionRec &e);
+   void _AddOp(OperationRec &op);
 
    void _PrintValidation();
-   Tokens _Tokens;
    bool _StateValid;
 
    typedef std::map<std::string, std::deque<std::string> > Tracker;
    Tracker _Tracker;
-
+   Scanner _Scanner;
+   Generator _Generator;
 };
