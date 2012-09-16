@@ -49,6 +49,7 @@ void MicroParser::_PrintGeneratedCode()
 {
    cout << " ************ GENERTED CODE *********** " << endl;
    string cmd = "cat " + _GenerateOutputFilename(_Filename);
+   cout << "Running : " << cmd << endl;
    int result = system(cmd.c_str());
    cout << "System call to cat : " << result << endl;
 }

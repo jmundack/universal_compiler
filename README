@@ -10,6 +10,10 @@ Assignment 2
 To run Test (file name can be any file in the Test data directory)
  --> ./build/debug/bin/MicroParserTest <filename>
 
+Assignment 3
+To run Test (file name can be any file in the Test data directory) -- will print out the generated code
+ --> ./build/debug/bin/MicroParserTest <filename>
+
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
 
