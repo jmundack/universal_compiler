@@ -1,5 +1,6 @@
 #include "MicroParser.h"
 #include <iostream>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ string _GenerateOutputFilename(const string &inputFilename)
    return outputFilename;
 }
 
-MicroParser::MicroParser(const std::string &filename):_StateValid(false), _Scanner(filename),_Generator(_GenerateOutputFilename(filename))
+MicroParser::MicroParser(const std::string &filename):_Filename(filename),_StateValid(false), _Scanner(filename),_Generator(_GenerateOutputFilename(filename))
 {
 }
 
@@ -44,6 +45,14 @@ void MicroParser::_PrintValidation()
    }
 }
 
+void MicroParser::_PrintGeneratedCode()
+{
+   cout << " ************ GENERTED CODE *********** " << endl;
+   string cmd = "cat " + _GenerateOutputFilename(_Filename);
+   int result = system(cmd.c_str());
+   cout << "System call to cat : " << result << endl;
+}
+
 void MicroParser::Parse()
 {
    _StateValid = true;
@@ -57,6 +66,7 @@ void MicroParser::Parse()
          cout << *itr << endl;
    }
    _PrintValidation();
+   _PrintGeneratedCode();
 }
 
 void MicroParser::_Match(const Token legalToken)

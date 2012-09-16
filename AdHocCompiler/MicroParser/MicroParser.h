@@ -24,9 +24,11 @@ private:
    void _AddOp(OperationRec &op);
 
    void _PrintValidation();
-   bool _StateValid;
+   void _PrintGeneratedCode();
 
    typedef std::map<std::string, std::deque<std::string> > Tracker;
+   std::string _Filename;
+   bool _StateValid;
    Tracker _Tracker;
    Scanner _Scanner;
    Generator _Generator;
