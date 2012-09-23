@@ -1,5 +1,5 @@
 include_directories (../include/)
 
-add_library (MicroParser MicroParser.h MicroParser.cpp)
-INSTALL(TARGETS MicroParser ARCHIVE DESTINATION lib)
-target_link_libraries(MicroParser Generator)
+add_library (ACMicroParser MicroParser.h MicroParser.cpp)
+INSTALL(TARGETS ACMicroParser ARCHIVE DESTINATION lib)
+target_link_libraries(ACMicroParser ACGenerator)

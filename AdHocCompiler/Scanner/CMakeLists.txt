@@ -1,4 +1,4 @@
 include_directories (../include/)
 
-add_library (Scanner Scanner.h Scanner.cpp)
-INSTALL(TARGETS Scanner ARCHIVE DESTINATION lib)
+add_library (ACScanner Scanner.h Scanner.cpp)
+INSTALL(TARGETS ACScanner ARCHIVE DESTINATION lib)

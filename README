@@ -4,15 +4,15 @@ How to build:
 
 Assignment 1
 To run Test (file name can be any file in the Test data directory)
- --> ./build/debug/bin/ScannerTest <filename>
+ --> ./build/debug/bin/ACScannerTest <filename>
 
 Assignment 2
 To run Test (file name can be any file in the Test data directory)
- --> ./build/debug/bin/MicroParserTest <filename>
+ --> ./build/debug/bin/ACMicroParserTest <filename>
 
 Assignment 3
 To run Test (file name can be any file in the Test data directory) -- will print out the generated code
- --> ./build/debug/bin/MicroParserTest <filename>
+ --> ./build/debug/bin/ACMicroParserTest <filename>
 
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
