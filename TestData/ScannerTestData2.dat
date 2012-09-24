@@ -1,7 +1,7 @@
 begin -- code to swap a nd ab without any temp variables
 a := 5;
 b := 25;
-a := a + b;
+a := a+b;
 b := a-b;
 a := a -b;
 end
