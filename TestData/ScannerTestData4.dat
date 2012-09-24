@@ -1,0 +1,26 @@
+begin -- begining of the program to print first 5 fibinocci numbers
+   a := 0;
+   b := 1;
+
+   -- print first 2
+   write(a);
+   write(b);
+  
+   -- print 3rd 
+   c := a+b;
+   write(c);
+   a := b;
+   b := c;
+
+   -- print 4 th
+   c := a+b;
+   write(c);
+   a := b;
+   b := c;
+
+   -- print 5th
+   c := a+b;
+   write(c);
+   a := b;
+   b := c;
+end -- end of the program

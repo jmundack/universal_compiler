@@ -2,6 +2,9 @@ How to build:
  --> cd build
  --> ./bootstrap.sh
 
+TestData:
+ --> Test input files can be found in the TestData directory
+
 Assignment 1
 To run Test (file name can be any file in the Test data directory)
  --> ./build/debug/bin/ACScannerTest <filename>
@@ -13,6 +16,12 @@ To run Test (file name can be any file in the Test data directory)
 Assignment 3
 To run Test (file name can be any file in the Test data directory) -- will print out the generated code
  --> ./build/debug/bin/ACMicroParserTest <filename>
+
+Assignment 3
+To run Test (file name can be any file in the Test data directory) -- will print out the generated code
+ --> ./build/debug/bin/ACMicroParserTest <filename>
+ --> ./build/debug/bin/UCMicroParserTest <filename>
+both should out the same last line
 
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
