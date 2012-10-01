@@ -1,0 +1,18 @@
+<program> begin <statement_list> end
+<statement_list> <statement>
+<statement_list> <statement> <statement_list>
+<statement> Id := <expression>;
+<statement> read ( <id_list>) ;
+<statement> write( <expression_list> ) ;
+<id_list> Id
+<id_list> Id , <id_list>
+<expression_list> <expression>
+<expression_list> <expression>,<expression_list>
+<expression> <primary>
+<expression> <primary><add op><expression>
+<primary> (<expression>)
+<primary> Id
+<primary> IntLiteral
+<add op> PlusOp
+<add op> MinusOp
+<system_goal> <program>$

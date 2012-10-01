@@ -1,9 +1,12 @@
 include_directories (../include/)
 
 add_executable (UCScannerTest ScannerTest.cpp)
+add_executable (UCGrammerAnalyzerTest GrammerAnalyzerTest.cpp)
 
 # Link the executable 
 target_link_libraries (UCScannerTest UCScanner Token)
+target_link_libraries (UCGrammerAnalyzerTest UCGrammerAnalyzer)
 
 INSTALL(TARGETS UCScannerTest RUNTIME DESTINATION bin)
+INSTALL(TARGETS UCGrammerAnalyzerTest RUNTIME DESTINATION bin)
 

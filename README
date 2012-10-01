@@ -17,11 +17,17 @@ Assignment 3
 To run Test (file name can be any file in the Test data directory) -- will print out the generated code
  --> ./build/debug/bin/ACMicroParserTest <filename>
 
-Assignment 3
+Assignment 4
 To run Test (file name can be any file in the Test data directory) -- will print out the generated code
  --> ./build/debug/bin/ACMicroParserTest <filename>
  --> ./build/debug/bin/UCMicroParserTest <filename>
 both should out the same last line
+
+Assignment 5
+To run Test (file name can be any file in the Test data directory) -- will print out the results
+ --> ./build/debug/bin/UCGrammerAnalyzerTest <filename>
+Asuumption : adjoining terminal token are space separated
+
 
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
