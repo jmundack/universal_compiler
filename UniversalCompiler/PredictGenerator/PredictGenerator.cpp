@@ -142,9 +142,6 @@ void PredictGenerator::_FillFirstSet()
 void PredictGenerator::_FillFollowSet()
 {
    cout << "************ " << __FUNCTION__ << " *******************" << endl;
-//   const Symbols &nonTerminalSymbols(_Grammer.GetNonTerminalSymbols());
-//   for (Symbols::const_iterator itr = nonTerminalSymbols.begin(); itr != nonTerminalSymbols.end(); ++itr)
-//      _FollowSet[*itr].clear();
 
    const Productions &productions(_Grammer.GetProductions());
    for (Productions::const_iterator j = productions.begin(); j != productions.end(); ++j)
@@ -153,7 +150,7 @@ void PredictGenerator::_FillFollowSet()
       {
          if (i->at(0) == '<' && (i+1) != (*j).second.end())
          {
-            const Symbols &first(_ComputeFirst((*i+1)));
+            const Symbols &first(_FirstSet[*(i+1)]);
             _FollowSet[*i].insert(first.begin(), first.end());
             _FollowSet.erase("lamda");
             if (first.find("lamda") != first.end())

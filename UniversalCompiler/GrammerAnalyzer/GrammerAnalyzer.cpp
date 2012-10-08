@@ -11,6 +11,8 @@ void GrammerAnalyzer::Analyze()
    _TerminalSymbols.clear();
    _NonTerminalSymbols.clear();
    _Productions.clear();
+   Symbols lhsSymbols;
+   Symbols rhsSymbols;
    ifstream inFile(_Filename.c_str());
    while (inFile.good() && !inFile.eof())
    {
@@ -63,6 +65,8 @@ void GrammerAnalyzer::Analyze()
       }
       rhs.erase(rhs.begin());
       _Productions.push_back(make_pair(lhs,rhs));
+      lhsSymbols.insert(lhs);
+      rhsSymbols.insert(rhs.begin(), rhs.end());
    }
 
    cout << "************************" << endl;
@@ -81,5 +85,15 @@ void GrammerAnalyzer::Analyze()
    cout << "************************" << endl;
    cout << "Non Terminal Symbols : " << endl;
    for (Symbols::const_iterator itr = _NonTerminalSymbols.begin(); itr != _NonTerminalSymbols.end(); ++itr)
+      cout << (*itr) << endl;
+
+   cout << "************************" << endl;
+   cout << "Non Terminal Symbols On LHS of Productions : " << endl;
+   for (Symbols::const_iterator itr = lhsSymbols.begin(); itr != lhsSymbols.end(); ++itr)
+      cout << (*itr) << endl;
+
+   cout << "************************" << endl;
+   cout << "Symbols on RHS of productions : " << endl;
+   for (Symbols::const_iterator itr = rhsSymbols.begin(); itr != rhsSymbols.end(); ++itr)
       cout << (*itr) << endl;
 }
