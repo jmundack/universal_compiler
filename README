@@ -28,6 +28,9 @@ To run Test (file name can be any file in the Test data directory) -- will print
  --> ./build/debug/bin/UCGrammerAnalyzerTest <filename>
 Asuumption : adjoining terminal token are space separated
 
+Assignment 6
+To run Test (file name can be any file in the Test data directory) -- will print out the results
+ --> ./build/debug/bin/UCPredictGeneratorTest <filename>
 
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
