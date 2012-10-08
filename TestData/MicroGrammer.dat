@@ -1,18 +1,30 @@
 <program> begin <statement_list> end
-<statement_list> <statement>
-<statement_list> <statement> <statement_list>
+
+<statement_list> <statement><statement_tail>
+<statement_tail> <statement_list>
+<statement_tail> lamda
+
 <statement> Id := <expression>;
 <statement> read ( <id_list>) ;
 <statement> write( <expression_list> ) ;
-<id_list> Id
-<id_list> Id , <id_list>
-<expression_list> <expression>
-<expression_list> <expression>,<expression_list>
-<expression> <primary>
-<expression> <primary><add op><expression>
+
+<id_list> Id<id_tail>
+<id_tail> , Id <id_tail>
+<id_tail> lamda
+
+<expression_list> <expression> <expression_tail>
+<expression_tail> ,<expression_list>
+<expression_tail> lamda
+
+<expression> <primary><primary_tail>
+<primary_tail> <add op> <expression>
+<primary_tail> lamda
+
 <primary> (<expression>)
 <primary> Id
 <primary> IntLiteral
+
 <add op> PlusOp
 <add op> MinusOp
+
 <system_goal> <program>$

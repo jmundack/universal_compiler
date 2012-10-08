@@ -1,8 +1,6 @@
 #include "GrammerAnalyzer.h"
 #include <fstream>
 #include <iostream>
-#include <vector>
-#include <set>
 
 using namespace std;
 
@@ -10,22 +8,17 @@ GrammerAnalyzer::GrammerAnalyzer(const string &filename):_Filename(filename){}
 
 void GrammerAnalyzer::Analyze()
 {
-   typedef vector<pair<string, string> > Productions;
-   typedef set<string> Symbols;
-   Symbols terminalSymbols;
-   Symbols nonTerminalSymbols;
-   Productions productions;
+   _TerminalSymbols.clear();
+   _NonTerminalSymbols.clear();
+   _Productions.clear();
    ifstream inFile(_Filename.c_str());
    while (inFile.good() && !inFile.eof())
    {
       string line;
       getline(inFile, line);
       if (line.empty()) continue;
-      {
-         const string lhs = line.substr(0,line.find_first_of('>')+1);
-         const string rhs = line.substr(line.find_first_of('>')+1);
-         productions.push_back(make_pair(lhs,rhs));
-      }
+      const string lhs = line.substr(0,line.find_first_of('>')+1);
+      vector<string> rhs;
       while (!line.empty())
       {
          string word;
@@ -62,23 +55,31 @@ void GrammerAnalyzer::Analyze()
          }
          cout << "Processing Word : " << word << endl;
          if (word.at(0) == '<')
-            nonTerminalSymbols.insert(word);
+            _NonTerminalSymbols.insert(word);
          else
-            terminalSymbols.insert(word);
+            _TerminalSymbols.insert(word);
+         rhs.push_back(word);
          line = line.substr(word.size());
       }
+      rhs.erase(rhs.begin());
+      _Productions.push_back(make_pair(lhs,rhs));
    }
 
    cout << "************************" << endl;
    cout << "Productions : " << endl;
-   for (Productions::const_iterator itr = productions.begin(); itr != productions.end(); ++itr)
-      cout << (*itr).first << " \t-->\t " << (*itr).second << endl;
+   for (Productions::const_iterator itr = _Productions.begin(); itr != _Productions.end(); ++itr)
+   {
+      cout << (*itr).first << " \t-->\t " ;
+      for (vector<string>::const_iterator itr2 = (*itr).second.begin(); itr2 != (*itr).second.end(); ++itr2)
+         cout << *itr2;
+      cout << endl;
+   }
    cout << "************************" << endl;
    cout << "Terminal Symbols : " << endl;
-   for (Symbols::const_iterator itr = terminalSymbols.begin(); itr != terminalSymbols.end(); ++itr)
+   for (Symbols::const_iterator itr = _TerminalSymbols.begin(); itr != _TerminalSymbols.end(); ++itr)
       cout << (*itr) << endl;
    cout << "************************" << endl;
    cout << "Non Terminal Symbols : " << endl;
-   for (Symbols::const_iterator itr = nonTerminalSymbols.begin(); itr != nonTerminalSymbols.end(); ++itr)
+   for (Symbols::const_iterator itr = _NonTerminalSymbols.begin(); itr != _NonTerminalSymbols.end(); ++itr)
       cout << (*itr) << endl;
 }
