@@ -1,5 +1,5 @@
 #include <iostream>
-#include "PredictGenerator.h"
+#include "TableGenerator.h"
 
 using namespace std;
 
@@ -11,8 +11,7 @@ int main ( int argc, char *argv[] )
     cerr << "Usage : " << argv[0] << " <file to parse>" << endl;
     return 1;
   }
-  PredictGenerator p(argv[1]);
-  p.GeneratePredictSets();
-  p.Print();
+  TableGenerator t(argv[1]);
+  t.GenerateTable();
   return 0;
 }

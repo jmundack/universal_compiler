@@ -8,7 +8,18 @@ PredictGenerator::PredictGenerator(const string &filename):_Filename(filename), 
    _Grammer.Analyze();
 }
 
-void PredictGenerator::PrintPredictSet()
+void PredictGenerator::Print()
+{
+   for (PredictSets::const_iterator itr = _PredictSets.begin(); itr != _PredictSets.end(); ++itr)
+   {
+      const set<string> &firstSet(itr->second);
+      cout << "Predict Set for : " << itr->first << endl;
+      for (set<string>::const_iterator i = firstSet.begin(); i != firstSet.end(); ++i)
+         cout << "\t" << *i << endl;
+   }
+}
+
+void PredictGenerator::GeneratePredictSets()
 {
    _MarkLamda();
    _FillFirstSet();
@@ -16,19 +27,16 @@ void PredictGenerator::PrintPredictSet()
    for (map<std::string, std::set<std::string> >::const_iterator itr = _FirstSet.begin(); itr != _FirstSet.end(); ++itr)
    {
       const set<string> &firstSet(itr->second);
-      cout << "Predict Set for : " << itr->first << endl;
       for (set<string>::const_iterator i = firstSet.begin(); i != firstSet.end(); ++i)
       {
          if (*i == "lamda")
          {
             const set<string> &followSet(_FollowSet[itr->first]);
             for (set<string>::const_iterator j = followSet.begin(); j != followSet.end(); ++j)
-            {
-               cout << "\t\t" <<  *j << endl;
-            }
+               _PredictSets[itr->first].insert(*j);
          }
          else
-            cout << "\t" << *i << endl;
+            _PredictSets[itr->first].insert(*i);
       }
    }
 }
