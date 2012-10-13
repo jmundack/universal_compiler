@@ -3,26 +3,26 @@
 
 using namespace std;
 
-TableGenerator::TableGenerator(const string &filename):_Filename(filename), _PredictGenerator(filename){}
+TableGenerator::TableGenerator(const string &filename):_Filename(filename), _PredictGenerator(filename)
+{
+   _PredictGenerator.GeneratePredictSets();
+}
 
 void TableGenerator::GenerateTable()
 {
+   const Symbols &terminalSymbols = _PredictGenerator.GetTerminalSymbols();
+   const Symbols &nonTerminalSymbols = _PredictGenerator.GetNonTerminalSymbols();
    const Productions &productions(_PredictGenerator.GetProductions());
    for (Productions::const_iterator itr = productions.begin(); itr != productions.end(); ++itr)
    {
       const string &lhs = itr->first;
-      const vector<string> &rhs(itr->second);
-      const size_t productionNum = itr - productions.begin() +1;
-      for (vector<string>::const_iterator i = rhs.begin(); i != rhs.end(); ++i)
+      const SymbolProdNums&predictSet(_PredictGenerator.GetPredictSet(lhs));
+      for (SymbolProdNums::const_iterator i = predictSet.begin(); i != predictSet.end(); ++i)
       {
-         const set<string> &predictSet(_PredictGenerator.GetPredictSet(itr->first));
-         if (predictSet.find(*i) != predictSet.end())
-            _Table[make_pair(lhs,*i)] = productionNum;
+         _Table[make_pair(lhs,i->first)] = i->second;
       }
    }
 
-   const Symbols &terminalSymbols = _PredictGenerator.GetTerminalSymbols();
-   const Symbols &nonTerminalSymbols = _PredictGenerator.GetNonTerminalSymbols();
    cout << "\t\t";
    for (Symbols::const_iterator itr = terminalSymbols.begin(); itr != terminalSymbols.end(); ++itr)
       cout << "\t" << *itr;
