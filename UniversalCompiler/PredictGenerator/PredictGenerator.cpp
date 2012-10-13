@@ -3,66 +3,11 @@
 
 using namespace std;
 
+const pair<string,size_t> Lamda = make_pair("lamda", 0);
+
 PredictGenerator::PredictGenerator(const string &filename):_Filename(filename), _Grammer(filename)
 {
    _Grammer.Analyze();
-}
-
-void PredictGenerator::Print()
-{
-   cout << "First Sets:" << endl;
-   for (SymbolSet::const_iterator itr = _FirstSet.begin(); itr != _FirstSet.end(); ++itr)
-   {
-      const SymbolProdNums &symbolProdNum(itr->second);
-      cout << itr->first << endl;
-      for (SymbolProdNums::const_iterator i = symbolProdNum.begin(); i != symbolProdNum.end(); ++i)
-      cout << "\t" << i->first << " from " << i->second << endl;
-
-
-   }
-
-   cout << "Follow Sets:" << endl;
-   for (SymbolSet::const_iterator itr = _FollowSet.begin(); itr != _FollowSet.end(); ++itr)
-   {
-      const SymbolProdNums &symbolProdNum(itr->second);
-      cout << itr->first << endl;
-      for (SymbolProdNums::const_iterator i = symbolProdNum.begin(); i != symbolProdNum.end(); ++i)
-      cout << "\t" << i->first << " from " << i->second << endl;
-
-
-   }
-   for (PredictSets::const_iterator itr = _PredictSets.begin(); itr != _PredictSets.end(); ++itr)
-   {
-      const set<pair<string, size_t > > &firstSet(itr->second);
-      cout << "Predict Set for : " << itr->first << endl;
-      for (set<pair<string, size_t> >::const_iterator i = firstSet.begin(); i != firstSet.end(); ++i)
-         if (i->second != 0)
-            cout << "\t" << i->first << "(" << i->second << ")" << endl;
-   }
-}
-
-void PredictGenerator::GeneratePredictSets()
-{
-   _MarkLamda();
-   _FillFirstSet();
-   _FillFollowSet();
-   for (SymbolSet::const_iterator itr = _FirstSet.begin(); itr != _FirstSet.end(); ++itr)
-   {
-      const set<pair<string, size_t> > &firstSet(itr->second);
-      for (set<pair<string,size_t > >::const_iterator i = firstSet.begin(); i != firstSet.end(); ++i)
-      {
-         if ((*i).first == "lamda")
-         {
-            const set<pair<string, size_t> > &followSet(_FollowSet[itr->first]);
-            for (set<pair<string, size_t > >::const_iterator j = followSet.begin(); j != followSet.end(); ++j)
-               if (j->second)
-                  _PredictSets[itr->first].insert(make_pair(j->first, j->second));
-         }
-         else
-            if (i->second)
-               _PredictSets[itr->first].insert(make_pair(i->first, i->second));
-      }
-   }
 }
 
 void PredictGenerator::_MarkLamda()
@@ -106,26 +51,21 @@ SymbolProdNums PredictGenerator::_ComputeFirst(const vector<string> &symbols)
       cout << *itr << "   ";
    cout << endl;
    SymbolProdNums first;
-   if (symbols.empty())
-      first.insert(make_pair("lamda", 0));
-   else
+   size_t i = 0;
+   while (i < symbols.size())
    {
-      size_t i = 0;
-      while (i < symbols.size())
-      {
-         const SymbolProdNums &firstSet(_FirstSet[symbols.at(i)]);
-         first.insert(firstSet.begin(), firstSet.end());
-         if (firstSet.find(make_pair("lamda",0)) == firstSet.end())
-            break;
-         first.erase(make_pair("lamda",0));
-         i++;
-      }
-      if (i == symbols.size())
-      {
-         const set<pair<string, size_t> > &firstSet(_FirstSet[symbols.at(i-1)]);
-         if (firstSet.find(make_pair("lamda",0)) != firstSet.end())
-            first.insert(make_pair("lamda",0));
-      }
+      const SymbolProdNums &firstSet(_FirstSet[symbols.at(i)]);
+      first.insert(firstSet.begin(), firstSet.end());
+      if (firstSet.find(Lamda) == firstSet.end())
+         break;
+      first.erase(Lamda);
+      i++;
+   }
+   if (i == symbols.size())
+   {
+      const set<pair<string, size_t> > &firstSet(_FirstSet[symbols.at(i-1)]);
+      if (firstSet.find(Lamda) != firstSet.end())
+         first.insert(Lamda);
    }
    cout << "First is : ";
    for (SymbolProdNums::const_iterator itr = first.begin(); itr != first.end(); ++itr)
@@ -142,7 +82,7 @@ void PredictGenerator::_FillFirstSet()
    for (Symbols::const_iterator itr = nonTerminalSymbols.begin(); itr != nonTerminalSymbols.end(); ++itr)
    {
       if (_DerivesLamda[*itr])
-         _FirstSet[*itr].insert(make_pair("lamda",0));
+         _FirstSet[*itr].insert(Lamda);
       else
          _FirstSet[*itr].clear();
    }
@@ -166,7 +106,6 @@ void PredictGenerator::_FillFirstSet()
       const SymbolProdNums &computerFirst(_ComputeFirst((*j).second));
       for (SymbolProdNums::const_iterator itr = computerFirst.begin(); itr != computerFirst.end(); ++itr)
          _FirstSet[(*j).first].insert(make_pair(itr->first, j - productions.begin() +1));
-//      _FirstSet[(*j).first].insert(computerFirst.begin(), computerFirst.end());
    }
    cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
 }
@@ -185,7 +124,7 @@ void PredictGenerator::_FillFollowSet()
             const set<pair<string, size_t> > &first(_FirstSet[*(i+1)]);
             _FollowSet[*i].insert(first.begin(), first.end());
             _FollowSet.erase("lamda");
-            if (first.find(make_pair("lamda",0)) != first.end())
+            if (first.find(Lamda) != first.end())
             {
                _FollowSet[*i].insert(_FollowSet[j->first].begin(), _FollowSet[j->first].end());
             }
@@ -194,3 +133,62 @@ void PredictGenerator::_FillFollowSet()
    }
    cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
 }
+
+void PredictGenerator::GeneratePredictSets()
+{
+   _MarkLamda();
+   _FillFirstSet();
+   _FillFollowSet();
+   for (SymbolSet::const_iterator itr = _FirstSet.begin(); itr != _FirstSet.end(); ++itr)
+   {
+      const set<pair<string, size_t> > &firstSet(itr->second);
+      for (set<pair<string,size_t > >::const_iterator i = firstSet.begin(); i != firstSet.end(); ++i)
+      {
+         if ((*i).first == "lamda")
+         {
+            const set<pair<string, size_t> > &followSet(_FollowSet[itr->first]);
+            for (set<pair<string, size_t > >::const_iterator j = followSet.begin(); j != followSet.end(); ++j)
+               if (j->second)
+                  _PredictSets[itr->first].insert(make_pair(j->first, j->second));
+         }
+         else
+            if (i->second)
+               _PredictSets[itr->first].insert(make_pair(i->first, i->second));
+      }
+   }
+}
+
+void PredictGenerator::Print()
+{
+   cout << "First Sets:" << endl;
+   for (SymbolSet::const_iterator itr = _FirstSet.begin(); itr != _FirstSet.end(); ++itr)
+   {
+      const SymbolProdNums &symbolProdNum(itr->second);
+      cout << itr->first << endl;
+      for (SymbolProdNums::const_iterator i = symbolProdNum.begin(); i != symbolProdNum.end(); ++i)
+      cout << "\t" << i->first << " from " << i->second << endl;
+
+
+   }
+
+   cout << "Follow Sets:" << endl;
+   for (SymbolSet::const_iterator itr = _FollowSet.begin(); itr != _FollowSet.end(); ++itr)
+   {
+      const SymbolProdNums &symbolProdNum(itr->second);
+      cout << itr->first << endl;
+      for (SymbolProdNums::const_iterator i = symbolProdNum.begin(); i != symbolProdNum.end(); ++i)
+      cout << "\t" << i->first << " from " << i->second << endl;
+
+
+   }
+   for (PredictSets::const_iterator itr = _PredictSets.begin(); itr != _PredictSets.end(); ++itr)
+   {
+      const set<pair<string, size_t > > &firstSet(itr->second);
+      cout << "Predict Set for : " << itr->first << endl;
+      for (set<pair<string, size_t> >::const_iterator i = firstSet.begin(); i != firstSet.end(); ++i)
+         if (i->second != 0)
+            cout << "\t" << i->first << "(" << i->second << ")" << endl;
+   }
+}
+
+
