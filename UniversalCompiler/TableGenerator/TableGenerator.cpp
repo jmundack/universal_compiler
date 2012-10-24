@@ -19,7 +19,21 @@ void TableGenerator::GenerateTable()
       const SymbolProdNums&predictSet(_PredictGenerator.GetPredictSet(lhs));
       for (SymbolProdNums::const_iterator i = predictSet.begin(); i != predictSet.end(); ++i)
       {
-         _Table[make_pair(lhs,i->first)] = i->second;
+         cout << "lhs : " << lhs << " pruduction num : " << i->second << endl;
+         if (productions.at(i->second -1).first == lhs)
+            _Table[make_pair(lhs,i->first)] = i->second;
+         else // temp hack to get the correct production number for lamda based productions
+         {
+            cout << "Looking for lamda production for " << lhs << endl;
+            for (Productions::const_iterator j = productions.begin(); j != productions.end(); ++j)
+            {
+               if (j->first == lhs && (j->second.at(0) == "lamda"))
+               {
+                  _Table[make_pair(lhs,i->first)] = j - productions.begin() + 1;
+                  break;
+               }
+            }
+         }
       }
    }
 

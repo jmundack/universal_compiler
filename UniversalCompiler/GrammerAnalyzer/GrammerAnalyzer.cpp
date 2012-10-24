@@ -4,7 +4,10 @@
 
 using namespace std;
 
-GrammerAnalyzer::GrammerAnalyzer(const string &filename):_Filename(filename){}
+GrammerAnalyzer::GrammerAnalyzer(const string &filename):_Filename(filename)
+{
+   Analyze();
+}
 
 void GrammerAnalyzer::Analyze()
 {

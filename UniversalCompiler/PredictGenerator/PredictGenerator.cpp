@@ -4,15 +4,17 @@
 using namespace std;
 
 const pair<string,size_t> Lamda = make_pair("lamda", 0);
+const bool Debug(false);
 
 PredictGenerator::PredictGenerator(const string &filename):_Filename(filename), _Grammer(filename)
 {
    _Grammer.Analyze();
+   GeneratePredictSets();
 }
 
 void PredictGenerator::_MarkLamda()
 {
-   cout << "************ " << __FUNCTION__ << " *******************" << endl;
+   if(Debug) cout << "************ " << __FUNCTION__ << " *******************" << endl;
    const Productions &productions(_Grammer.GetProductions());
    const Symbols &nonTerminalSymbols(_Grammer.GetNonTerminalSymbols());
    for (Symbols::const_iterator itr = nonTerminalSymbols.begin(); itr != nonTerminalSymbols.end(); ++itr)
@@ -40,16 +42,19 @@ void PredictGenerator::_MarkLamda()
 
    for (map<string, bool>::const_iterator itr = _DerivesLamda.begin(); itr != _DerivesLamda.end(); ++itr)
       cout << " DerivesLamda[" << itr->first << "] is " << (itr->second ? "true" : "false") << endl;
-   cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
+   if(Debug) cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
 }
 
 SymbolProdNums PredictGenerator::_ComputeFirst(const vector<string> &symbols)
 {
-   cout << "************ " << __FUNCTION__ << " *******************" << endl;
-   cout << "Symbols : ";
-   for (vector<string>::const_iterator itr = symbols.begin(); itr != symbols.end(); ++itr)
-      cout << *itr << "   ";
-   cout << endl;
+   if(Debug) 
+   {
+      cout << "************ " << __FUNCTION__ << " *******************" << endl;
+      cout << "Symbols : ";
+      for (vector<string>::const_iterator itr = symbols.begin(); itr != symbols.end(); ++itr)
+         cout << *itr << "   ";
+      cout << endl;
+   }
    SymbolProdNums first;
    size_t i = 0;
    while (i < symbols.size())
@@ -67,17 +72,20 @@ SymbolProdNums PredictGenerator::_ComputeFirst(const vector<string> &symbols)
       if (firstSet.find(Lamda) != firstSet.end())
          first.insert(Lamda);
    }
-   cout << "First is : ";
-   for (SymbolProdNums::const_iterator itr = first.begin(); itr != first.end(); ++itr)
-      cout << itr->first << "(" << itr->second << ")   ";
-   cout << endl;
-   cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
+   if(Debug) 
+   {
+      cout << "First is : ";
+      for (SymbolProdNums::const_iterator itr = first.begin(); itr != first.end(); ++itr)
+         cout << itr->first << "(" << itr->second << ")   ";
+      cout << endl;
+      cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
+   }
    return first;
 }
 
 void PredictGenerator::_FillFirstSet()
 {
-   cout << "************ " << __FUNCTION__ << " *******************" << endl;
+   if (Debug) cout << "************ " << __FUNCTION__ << " *******************" << endl;
    const Symbols &nonTerminalSymbols(_Grammer.GetNonTerminalSymbols());
    for (Symbols::const_iterator itr = nonTerminalSymbols.begin(); itr != nonTerminalSymbols.end(); ++itr)
    {
@@ -114,12 +122,12 @@ void PredictGenerator::_FillFirstSet()
          changes |= (firstSetSize != _FirstSet[j->first].size());
       }
    }
-   cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
+   if(Debug) cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
 }
 
 void PredictGenerator::_FillFollowSet()
 {
-   cout << "************ " << __FUNCTION__ << " *******************" << endl;
+   if(Debug) cout << "************ " << __FUNCTION__ << " *******************" << endl;
 
    const Productions &productions(_Grammer.GetProductions());
    bool changes(true);
@@ -155,7 +163,7 @@ void PredictGenerator::_FillFollowSet()
          }
       }
    }
-   cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
+   if(Debug) cout << "************ DONE " << __FUNCTION__ << " *******************" << endl;
 }
 
 void PredictGenerator::GeneratePredictSets()

@@ -5,6 +5,8 @@
 #include <fstream>
 #include <algorithm>
 
+const bool DebugScanner(false);
+
 using namespace std;
 
 std::ostream& operator<< (std::ostream &out, const State state)
@@ -119,7 +121,7 @@ void Scanner::ReadNextToken()
             done = true;
          else
          {
-            cout << "state : " << state << " is dont care state so setting to start again " << endl;
+            if (DebugScanner) cout << "state : " << state << " is dont care state so setting to start again " << endl;
             state = Start;
             _Buffer.clear();
          }
@@ -135,7 +137,7 @@ void Scanner::ReadNextToken()
    }
    if (_InFile.eof())
       _NextToken = EofSym;
-   cout << "Token : " << _NextToken << " buffer --> \"" << _Buffer << '"' << endl;
+   if(DebugScanner) cout << "Token : " << _NextToken << " buffer --> \"" << _Buffer << '"' << endl;
 }
 
 State Scanner::_NextState(const State currentState, bool &consumeChar)
@@ -270,9 +272,7 @@ Token Scanner::_LookUpCode(const State state, const std::string &s) const
      token = RParen;
   else if (state == StateMinusOp)
      token = MinusOp;
-#if DEBUG
-  cout << "*** returning " << token << " for str : \"" << s << "\" and state : " << state << endl;
-#endif
+  if(DebugScanner) cout << "*** returning " << token << " for str : \"" << s << "\" and state : " << state << endl;
   return token;
 }
 
@@ -331,3 +331,23 @@ void Scanner::_ConsumeChar()
 }
 
 
+string Scanner::GetRemainingInput()
+{
+   string s;
+   if (_InFile.eof()) return s;
+   ifstream inFile(_Filename.c_str());
+   inFile.seekg(_InFile.tellg());
+   while(true)
+   {
+      string temp;
+      getline(inFile, temp);
+      if (inFile.eof()) 
+      {
+         s += "$";
+         break;
+      }
+      s += temp;
+   }
+   s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+   return s;
+}

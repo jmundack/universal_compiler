@@ -50,6 +50,7 @@ public:
    Token GetNextToken() const { return _NextToken; }
    void ReadNextToken();
    const std::string &GetBuffer() const { return _Buffer; }
+   std::string GetRemainingInput();
 private:
    /**
     * \brief Helper function to convert a string to a token
