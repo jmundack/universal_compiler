@@ -32,6 +32,14 @@ Assignment 6
 To run Test (file name can be any file in the Test data directory) -- will print out the results
  --> ./build/debug/bin/UCPredictGeneratorTest <filename>
 
+Assignment 7
+To run Test (file name can be any file in the Test data directory) -- will print out the results
+ --> ./build/debug/bin/UCTableGeneratorTest <filename>
+
+Assignment 8
+To run Test (file name can be any file in the Test data directory) -- will print out the results
+ --> ./build/debug/bin/UCParserDriverTest <MicroGrammer.dat> <program to parse>
+
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
 
