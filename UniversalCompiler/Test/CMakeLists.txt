@@ -1,8 +1,8 @@
 include_directories (../include/)
 
 set (TESTS ScannerTest GrammerAnalyzerTest PredictGeneratorTest
-   TableGeneratorTest ParserDriverTest)
-set (LIBRARIES UCParserDriver UCTableGenerator UCPredictGenerator
+   TableGeneratorTest ParserDriverTest MicroCompilerTest)
+set (LIBRARIES UCMicroCompiler UCParserDriver UCTableGenerator UCPredictGenerator
    UCGrammerAnalyzer UCScanner Token)
 
 foreach (test ${TESTS})
