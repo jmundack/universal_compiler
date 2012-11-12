@@ -2,6 +2,7 @@
 #include <deque>
 #include <iostream>
 
+
 enum Token          // enums representing all the vlaid tokens
 {
     Invalid,

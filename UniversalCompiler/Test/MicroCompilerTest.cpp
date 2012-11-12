@@ -1,5 +1,5 @@
 #include <iostream>
-#include "ParserDriver.h"
+#include "MicroCompiler.h"
 
 using namespace std;
 
@@ -11,7 +11,7 @@ int main ( int argc, char *argv[] )
     cerr << "Usage : " << argv[0] << " <grammer> <program>" << endl;
     return 1;
   }
-  ParserDriver p(argv[1], argv[2]);
+  MicroCompiler p(argv[1], argv[2]);
   p.Parse();
   return 0;
 }

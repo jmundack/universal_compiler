@@ -59,11 +59,16 @@ void GrammerAnalyzer::Analyze()
             }
          }
          cout << "Processing Word : " << word << endl;
+         rhs.push_back(word);
          if (word.at(0) == '<')
             _NonTerminalSymbols.insert(word);
+         else if (word.at(0) == '#')
+         {
+            cout << "\t Ignoring : " << word << endl;
+            rhs.pop_back();
+         }
          else
             _TerminalSymbols.insert(word);
-         rhs.push_back(word);
          line = line.substr(word.size());
       }
       rhs.erase(rhs.begin());

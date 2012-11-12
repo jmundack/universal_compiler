@@ -6,6 +6,7 @@ using namespace std;
 TableGenerator::TableGenerator(const string &filename):_Filename(filename), _PredictGenerator(filename)
 {
    _PredictGenerator.GeneratePredictSets();
+   GenerateTable();
 }
 
 void TableGenerator::GenerateTable()

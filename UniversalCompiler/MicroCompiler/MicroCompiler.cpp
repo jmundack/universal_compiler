@@ -80,6 +80,7 @@ void MicroCompiler::Parse()
       {
          const pair<string,string> key(make_pair(s.top(), _GetTokenStr(scanner.GetNextToken())));
          const size_t productionNum(table[key]);
+            cerr << "Key : " << key.first << ", " << key.second << endl;
          if (productionNum == 0)
          {
             cerr << "Invalid data -- non terminal : " << s.top() << " token : " << _GetTokenStr(scanner.GetNextToken()) << endl;
@@ -98,7 +99,7 @@ void MicroCompiler::Parse()
       }
       else
       {
-         if (s.top() != "lamda") 
+         if (s.top() != "lamda" && s.top().at(0) != '#') 
          {
             remainingInput = scanner.GetRemainingInput();
             scanner.ReadNextToken();
