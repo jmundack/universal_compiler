@@ -136,7 +136,10 @@ void Scanner::ReadNextToken()
       }
    }
    if (_InFile.eof())
+   {
       _NextToken = EofSym;
+      _Buffer = "$";
+   }
    if(DebugScanner) cout << "Token : " << _NextToken << " buffer --> \"" << _Buffer << '"' << endl;
 }
 
