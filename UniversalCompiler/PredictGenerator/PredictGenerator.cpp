@@ -4,7 +4,7 @@
 using namespace std;
 
 const pair<string,size_t> Lamda = make_pair("lamda", 0);
-const bool Debug(false);
+const bool Debug(true);
 
 PredictGenerator::PredictGenerator(const string &filename):_Filename(filename), _Grammer(filename)
 {
@@ -31,7 +31,10 @@ void PredictGenerator::_MarkLamda()
       {
          bool rhsDerivesLamda = true;
          for (vector<string>::const_iterator i = (*itr).second.begin(); i != (*itr).second.end(); ++i)
+         {
+            if (i->at(0) == '#') continue; // skip action symbols
             rhsDerivesLamda &= _DerivesLamda[*i];
+         }
          if (rhsDerivesLamda && !_DerivesLamda[itr->first])
          {
             changes = true;
@@ -59,11 +62,14 @@ SymbolProdNums PredictGenerator::_ComputeFirst(const vector<string> &symbols)
    size_t i = 0;
    while (i < symbols.size())
    {
-      const SymbolProdNums &firstSet(_FirstSet[symbols.at(i)]);
-      first.insert(firstSet.begin(), firstSet.end());
-      if (firstSet.find(Lamda) == firstSet.end())
-         break;
-      first.erase(Lamda);
+      if (symbols.at(i).at(0) != '#')
+      {
+         const SymbolProdNums &firstSet(_FirstSet[symbols.at(i)]);
+         first.insert(firstSet.begin(), firstSet.end());
+         if (firstSet.find(Lamda) == firstSet.end())
+            break;
+         first.erase(Lamda);
+      }
       i++;
    }
    if (i == symbols.size())
@@ -86,6 +92,7 @@ SymbolProdNums PredictGenerator::_ComputeFirst(const vector<string> &symbols)
 void PredictGenerator::_FillFirstSet()
 {
    if (Debug) cout << "************ " << __FUNCTION__ << " *******************" << endl;
+
    const Symbols &nonTerminalSymbols(_Grammer.GetNonTerminalSymbols());
    for (Symbols::const_iterator itr = nonTerminalSymbols.begin(); itr != nonTerminalSymbols.end(); ++itr)
    {
@@ -104,8 +111,15 @@ void PredictGenerator::_FillFirstSet()
    {
       for (Symbols::const_iterator itr = terminalSymbols.begin(); itr != terminalSymbols.end(); ++itr)
       {
-         if ((*j).second.at(0) == *itr)
-            _FirstSet[j->first].insert(make_pair(*itr, j - productions.begin() + 1));
+         for (vector<string>::const_iterator rhsItem = j->second.begin(); rhsItem != j->second.end(); ++rhsItem)
+         {
+            if (rhsItem->at(0) == '#') continue; // skip action symbols
+            if (*rhsItem == *itr)
+            {
+               _FirstSet[j->first].insert(make_pair(*itr, j - productions.begin() + 1));
+            }
+            break;
+         }
       }
    }
 
@@ -137,7 +151,13 @@ void PredictGenerator::_FillFollowSet()
       for (Productions::const_iterator j = productions.begin(); j != productions.end(); ++j)
       {
          const string &lhs(j->first);
-         const vector<string> &rhs(j->second);
+         const vector<string> &rhsWithActionSymbols(j->second);
+         vector<string> rhs;
+         for (vector<string>::const_iterator i = rhsWithActionSymbols.begin(); i != rhsWithActionSymbols.end(); ++i)
+         {
+            if (i->at(0) != '#')
+               rhs.push_back(*i);
+         }
          for (vector<string>::const_iterator i = rhs.begin(); i != rhs.end(); ++i)
          {
             const size_t followSetSize(_FollowSet[*i].size());
@@ -168,6 +188,10 @@ void PredictGenerator::_FillFollowSet()
 
 void PredictGenerator::GeneratePredictSets()
 {
+   _DerivesLamda.clear();
+   _FirstSet.clear();
+   _FollowSet.clear();
+   _PredictSets.clear();
    _MarkLamda();
    _FillFirstSet();
    _FillFollowSet();
@@ -200,8 +224,6 @@ void PredictGenerator::Print()
       cout << "First Set for : " << itr->first << endl;
       for (SymbolProdNums::const_iterator i = symbolProdNum.begin(); i != symbolProdNum.end(); ++i)
       cout << "\t" << i->first << " from " << i->second << endl;
-
-
    }
 
    cout << "******************************************************************" << endl;

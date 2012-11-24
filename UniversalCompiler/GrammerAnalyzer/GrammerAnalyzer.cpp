@@ -65,7 +65,7 @@ void GrammerAnalyzer::Analyze()
          else if (word.at(0) == '#')
          {
             cout << "\t Ignoring : " << word << endl;
-            rhs.pop_back();
+//            rhs.pop_back();
          }
          else
             _TerminalSymbols.insert(word);
@@ -83,7 +83,7 @@ void GrammerAnalyzer::Analyze()
    {
       cout << (*itr).first << " \t-->\t " ;
       for (vector<string>::const_iterator itr2 = (*itr).second.begin(); itr2 != (*itr).second.end(); ++itr2)
-         cout << *itr2;
+         cout << ' ' << *itr2;
       cout << endl;
    }
    cout << "************************" << endl;
@@ -103,5 +103,5 @@ void GrammerAnalyzer::Analyze()
    cout << "************************" << endl;
    cout << "Symbols on RHS of productions : " << endl;
    for (Symbols::const_iterator itr = rhsSymbols.begin(); itr != rhsSymbols.end(); ++itr)
-      cout << (*itr) << endl;
+      if (itr->at(0) != '#') cout << (*itr) << endl;
 }
