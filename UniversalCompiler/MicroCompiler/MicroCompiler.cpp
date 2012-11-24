@@ -52,7 +52,7 @@ void MicroCompiler::_PrintBlock(const string &action, const string &remainingInp
    cout << "******************************************" << endl;
 }
 
-MicroCompiler::MicroCompiler(const string &grammer, const string &program):_GrammerFile(grammer),_ProgramFile(program)
+MicroCompiler::MicroCompiler(const string &grammer, const string &program):_GrammerFile(grammer),_ProgramFile(program),_CodeGenerator("generated_code.out")
 {}
 
 void MicroCompiler::Parse()
@@ -84,7 +84,6 @@ void MicroCompiler::Parse()
       {
          const pair<string,string> key(make_pair(topSymbol, _GetTokenStr(scanner.GetNextToken())));
          const size_t productionNum(table[key]);
-            cerr << "Key : " << key.first << ", " << key.second << endl;
          if (productionNum == 0)
          {
             cerr << "Invalid data -- non terminal : " << topSymbol << " token : " << _GetTokenStr(scanner.GetNextToken()) << endl;
@@ -126,8 +125,7 @@ void MicroCompiler::Parse()
             action = "Term : " + _ParseStack.front();
             if (topSymbol != "lamda")
             {
-               deque<string>::iterator itr = _SemanticStack.end() - _CurrentIndex;
-               *itr = "[" + scanner.GetBuffer() + "]";
+               _UpdateSemanticStack(_CurrentIndex, "[" + scanner.GetBuffer() + "]");
                remainingInput = scanner.GetRemainingInput();
                scanner.ReadNextToken();
             }
@@ -159,10 +157,50 @@ void MicroCompiler::Parse()
          else
          {
             action = "Action : " + _ParseStack.front();
-            cout << "Calling : " << _ParseStack.front() << endl;
+            _HandleActionSymbol(_ParseStack.front());
             _ParseStack.pop_front();
          }
       }
       _PrintBlock(action, remainingInput);
    }
+}
+
+void MicroCompiler::_UpdateSemanticStack(const size_t index, const std::string &value)
+{
+   deque<string>::iterator itr = _SemanticStack.end() - index;
+   *itr = value;
+}
+
+void MicroCompiler::_HandleActionSymbol(const std::string &action)
+{
+   string function = action.substr(0,action.find_first_of('('));
+   cout << "Function := " << function << endl;
+   if (function == "#Start")
+   {
+      cout << "Start()" << endl;
+      _CodeGenerator.Start();
+   }
+   else if (function == "#Finish")
+   {
+      cout << "Finish()" << endl;
+      _CodeGenerator.Finish();
+   }
+   else if (function == "#Assign")
+      cout << "Assign(1,2)" << endl;
+   else if (function == "#ReadId")
+      cout << "ReadID(1)" << endl;
+   else if (function == "#WriteExpr")
+      cout << "WriteID(1)" << endl;
+   else if (function == "#GenInfix")
+      cout << "GenerateInFix(1,2,3)" << endl;
+   else if (function == "#ProcessLiteral")
+      cout << "ProcessLiteral(1,2)" << endl;
+   else if (function == "#ProcessOp")
+      cout << "ProcessOperationRec(1,2)" << endl;
+   else if (function == "#ProcessId")
+      cout << "ProcessID(1,2)" << endl;
+   else if (function == "#Copy")
+      cout << "Copy(1,2)" << endl;
+   else
+      cout << "Unknown Action!" << endl;
 }

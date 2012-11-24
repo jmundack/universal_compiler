@@ -1,7 +1,7 @@
 include_directories (../include/)
 
 set (MODULES Scanner GrammerAnalyzer PredictGenerator TableGenerator ParserDriver MicroCompiler)
-set (LIBRARIES Token)
+set (LIBRARIES ACGenerator Token)
 foreach (module ${MODULES})
    list(APPEND TESTS ${module}Test)
    set(LIBRARIES UC${module} ${LIBRARIES})

@@ -40,13 +40,15 @@ void SymbolTable::Add(const string &newSymbol)
    _Symbols.push_back(newSymbol);
 }
 
-Generator::Generator(const string &filename):_TempCount(0), _Filename(filename){}
+Generator::Generator(const string &filename):_TempCount(0), _Filename(filename)
+{}
 
 void Generator::Start()
 {
    _TempCount = 0;
    _SymbolTable.Clear();
    _OutFile.open(_Filename.c_str());
+   cout << "Oped output file : " << _Filename << endl;
 }
 
 void Generator::Finish()
