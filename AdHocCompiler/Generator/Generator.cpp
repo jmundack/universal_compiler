@@ -41,7 +41,9 @@ void SymbolTable::Add(const string &newSymbol)
 }
 
 Generator::Generator(const string &filename):_TempCount(0), _Filename(filename)
-{}
+{
+   remove(_Filename.c_str());
+}
 
 void Generator::Start()
 {
@@ -111,7 +113,14 @@ void Generator::_Generate(const string &s1,
    if (!s3.empty()) _OutFile << ", " << s3;
    if (!s4.empty()) _OutFile << ", " << s4;
    _OutFile << endl;
+
+   _CodeGenerated << s1;
+   if (!s2.empty()) _CodeGenerated << " " << s2;
+   if (!s3.empty()) _CodeGenerated << ", " << s3;
+   if (!s4.empty()) _CodeGenerated << ", " << s4;
+   _CodeGenerated << endl;
 }
+
 void Generator::_CheckID(const string &symbol)
 {
    if (!_SymbolTable.Exists(symbol))

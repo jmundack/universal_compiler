@@ -1,6 +1,5 @@
 #include "MicroCompiler.h"
 #include "TableGenerator.h"
-#include "Scanner.h"
 #include "PredictGenerator.h"
 #include <stack>
 #include <sstream>
@@ -37,31 +36,38 @@ namespace
    }
 }
 
+string _Buffer;
+map<size_t,ExpressionRec> _Records;
+vector<OperationRec> _OpRec;
+const char *OutputFilename("generated_code.out");
+
 void MicroCompiler::_PrintBlock(const string &action, const string &remainingInput)
 {
    cout << "******************************************" << endl;
    cout << action << endl;
-   cout << "Input : " << remainingInput << endl;
-   cout << "PS : ";
-   std::copy(_ParseStack.begin(), _ParseStack.end(), std::ostream_iterator<string>(std::cout, ""));
+   cout << "---> Input : " << remainingInput << endl;
+   cout << "---> PS : ";
+   std::copy(_ParseStack.begin(), _ParseStack.end(), std::ostream_iterator<string>(std::cout, " "));
    cout << endl;
-   cout << "SS : ";
-   std::copy(_SemanticStack.begin(), _SemanticStack.end(), std::ostream_iterator<string>(std::cout, ""));
+   cout << "---> SS : ";
+   std::copy(_SemanticStack.begin(), _SemanticStack.end(), std::ostream_iterator<string>(std::cout, " "));
    cout << endl;
-   cout << "Indices : Left(" << _LeftIndex << ") right (" << _RightIndex << ") current(" << _CurrentIndex << ") top(" << _TopIndex << ")" << endl; 
+   cout << "---> Indices : Left(" << _LeftIndex << ") right (" << _RightIndex << ") current(" << _CurrentIndex << ") top(" << _TopIndex << ")" << endl; 
+   cout << "---> Code Generates : " << endl;
+   cout << _CodeGenerator.GetCodeGenerated() << endl;
    cout << "******************************************" << endl;
 }
 
-MicroCompiler::MicroCompiler(const string &grammer, const string &program):_GrammerFile(grammer),_ProgramFile(program),_CodeGenerator("generated_code.out")
+MicroCompiler::MicroCompiler(const string &grammer, const string &program):_GrammerFile(grammer),_ProgramFile(program),_Scanner(program),_CodeGenerator(OutputFilename)
 {}
 
 void MicroCompiler::Parse()
 {
    Productions productions(GrammerAnalyzer(_GrammerFile).GetProductions());
    Table table(TableGenerator(_GrammerFile).GetTable());
-   Scanner scanner(_ProgramFile);
-   string remainingInput(scanner.GetRemainingInput());
-   scanner.ReadNextToken();
+   string remainingInput(_Scanner.GetRemainingInput());
+   _Scanner.ReadNextToken();
+   _Buffer = _Scanner.GetBuffer();
    PredictGenerator p(_GrammerFile);
    p.Print();
 
@@ -82,11 +88,11 @@ void MicroCompiler::Parse()
       string topSymbol = _ParseStack.at(0);
       if (topSymbol.at(0) == '<')
       {
-         const pair<string,string> key(make_pair(topSymbol, _GetTokenStr(scanner.GetNextToken())));
+         const pair<string,string> key(make_pair(topSymbol, _GetTokenStr(_Scanner.GetNextToken())));
          const size_t productionNum(table[key]);
          if (productionNum == 0)
          {
-            cerr << "Invalid data -- non terminal : " << topSymbol << " token : " << _GetTokenStr(scanner.GetNextToken()) << endl;
+            cerr << "Invalid data -- non terminal : " << topSymbol << " token : " << _GetTokenStr(_Scanner.GetNextToken()) << endl;
             return;
          }
          else
@@ -122,85 +128,183 @@ void MicroCompiler::Parse()
          const Symbols &terminalSymbols(p.GetTerminalSymbols());
          if (terminalSymbols.find(topSymbol) != terminalSymbols.end() || topSymbol == "lamda")
          {
+            /*
+            if (topSymbol != _Scanner.GetNextToken())
+            {
+               cerr << "Synatx Error -- expected : " << topSymbol << " but got " << _Scanner.GetNextToken() << endl;
+               return;
+            }*/
             action = "Term : " + _ParseStack.front();
             if (topSymbol != "lamda")
             {
-               _UpdateSemanticStack(_CurrentIndex, "[" + scanner.GetBuffer() + "]");
-               remainingInput = scanner.GetRemainingInput();
-               scanner.ReadNextToken();
+               _UpdateSemanticStack(_CurrentIndex);
+               remainingInput = _Scanner.GetRemainingInput();
+               _Buffer = _Scanner.GetBuffer();
+               _Scanner.ReadNextToken();
             }
             if(Debug) cout << "Poping for match" << endl;
             _CurrentIndex++;
             _ParseStack.pop_front();
          }
-         else if (topSymbol == "EOP")
+         else 
          {
-            action = "EOP : (" + _ParseStack.at(1) + ',' + _ParseStack.at(2) +',' + _ParseStack.at(3) +','+ _ParseStack.at(4) + ")";
-            _ParseStack.pop_front(); // pop EOP
-            // restore all indices
-            _LeftIndex = boost::lexical_cast<size_t>(_ParseStack.front());
-            _ParseStack.pop_front();
-            _RightIndex = boost::lexical_cast<size_t>(_ParseStack.front());
-            _ParseStack.pop_front();
-            _CurrentIndex = boost::lexical_cast<size_t>(_ParseStack.front());
-            _ParseStack.pop_front();
-            _TopIndex = boost::lexical_cast<size_t>(_ParseStack.front());
-            _ParseStack.pop_front();
-            // Done restoring indices
-            _CurrentIndex ++;
-            while(_SemanticStack.size() != _TopIndex -1)
+            if (topSymbol == "EOP")
             {
-               cout << "Popping : " << _SemanticStack.front()  << " from _Semantic stack " << endl;
-               _SemanticStack.pop_front();
+               action = "EOP : (" + _ParseStack.at(1) + ',' + _ParseStack.at(2) +',' + _ParseStack.at(3) +','+ _ParseStack.at(4) + ")";
+               _ParseStack.pop_front(); // pop EOP
+               // restore all indices
+               _LeftIndex = boost::lexical_cast<size_t>(_ParseStack.front());
+               _ParseStack.pop_front();
+               _RightIndex = boost::lexical_cast<size_t>(_ParseStack.front());
+               _ParseStack.pop_front();
+               _CurrentIndex = boost::lexical_cast<size_t>(_ParseStack.front());
+               _ParseStack.pop_front();
+               _TopIndex = boost::lexical_cast<size_t>(_ParseStack.front());
+               _ParseStack.pop_front();
+               // Done restoring indices
+               _CurrentIndex ++;
+               while(_SemanticStack.size() != _TopIndex -1)
+               {
+                  cout << "Popping : " << _SemanticStack.front()  << " from _Semantic stack " << endl;
+                  _SemanticStack.pop_front();
+               }
             }
-         }
-         else
-         {
-            action = "Action : " + _ParseStack.front();
-            _HandleActionSymbol(_ParseStack.front());
-            _ParseStack.pop_front();
+            else
+            {
+               action = "Action : " + _ParseStack.front();
+               _HandleActionSymbol(_ParseStack.front());
+               _ParseStack.pop_front();
+            }
          }
       }
       _PrintBlock(action, remainingInput);
    }
 }
 
-void MicroCompiler::_UpdateSemanticStack(const size_t index, const std::string &value)
+void MicroCompiler::_UpdateSemanticStack(const size_t index)
 {
    deque<string>::iterator itr = _SemanticStack.end() - index;
-   *itr = value;
+//   *itr = _Scanner.GetBuffer();
+   *itr = _Buffer;
 }
 
 void MicroCompiler::_HandleActionSymbol(const std::string &action)
 {
+   const vector<size_t> &arguments(_ParseArgumentIndices(action));
    string function = action.substr(0,action.find_first_of('('));
    cout << "Function := " << function << endl;
+   cout << "(";
+   std::copy(arguments.begin(), arguments.end(), std::ostream_iterator<size_t>(std::cout, ","));
+   cout << ")" << endl;
    if (function == "#Start")
    {
-      cout << "Start()" << endl;
       _CodeGenerator.Start();
    }
    else if (function == "#Finish")
    {
-      cout << "Finish()" << endl;
       _CodeGenerator.Finish();
    }
    else if (function == "#Assign")
-      cout << "Assign(1,2)" << endl;
+   {
+      cout << " Records : " << endl;
+      for (map<size_t, ExpressionRec>::const_iterator itr = _Records.begin(); itr != _Records.end(); ++itr)
+      {
+         cout << "index : " << itr->first << " name : " << itr->second.GetStr() << endl;
+      }
+      _CodeGenerator.Assign(_Records.at(arguments.at(1)), _Records.at(arguments.at(0)));
+
+   }
    else if (function == "#ReadId")
-      cout << "ReadID(1)" << endl;
+   {
+      _CodeGenerator.ReadID(_Records.at(arguments.at(0)));
+   }
    else if (function == "#WriteExpr")
-      cout << "WriteID(1)" << endl;
+   {
+      _CodeGenerator.WriteID(_Records.at(arguments.at(0)));
+   }
    else if (function == "#GenInfix")
-      cout << "GenerateInFix(1,2,3)" << endl;
+   {
+      cout << " Records : " << endl;
+      for (map<size_t, ExpressionRec>::const_iterator itr = _Records.begin(); itr != _Records.end(); ++itr)
+      {
+         cout << "index : " << itr->first << " name : " << itr->second.GetStr() << endl;
+      }
+      _Records[arguments.at(0)] = _CodeGenerator.GenerateInFix(_Records.at(arguments.at(0)), _OpRec.back(), _Records.at(arguments.at(2)));
+      _OpRec.pop_back();
+
+   }
    else if (function == "#ProcessLiteral")
-      cout << "ProcessLiteral(1,2)" << endl;
+   {
+      _UpdateSemanticStack(arguments.at(0));
+      ExpressionRec e;
+      _CodeGenerator.ProcessLiteral(_GetSemanticStackValue(arguments.at(0)), e);
+      cout << "Adding record for : " << arguments.at(0) << endl;
+      _Records[arguments.at(0)] = e;
+   }
    else if (function == "#ProcessOp")
-      cout << "ProcessOperationRec(1,2)" << endl;
+   {
+      OperationRec opRec;
+      _CodeGenerator.ProcessOperationRec(_Buffer == "+" ? PlusOp : MinusOp, opRec);
+      _OpRec.push_back(opRec);
+   }
    else if (function == "#ProcessId")
-      cout << "ProcessID(1,2)" << endl;
+   {
+      _UpdateSemanticStack(arguments.at(0));
+      ExpressionRec e;
+      _CodeGenerator.ProcessID(_GetSemanticStackValue(arguments.at(0)), e);
+      cout << "Adding record for : " << arguments.at(0) << endl;
+      _Records[arguments.at(0)] = e;
+   }
    else if (function == "#Copy")
-      cout << "Copy(1,2)" << endl;
+   {
+      cout << "Copying record from : " << arguments.at(0) << " to " << arguments.at(1) << endl;
+      _Records[arguments.at(1)] = _Records[arguments.at(0)];
+   }
    else
-      cout << "Unknown Action!" << endl;
+   {
+      throw("Unknown Action!");
+   }
+}
+
+vector<size_t> MicroCompiler::_ParseArgumentIndices(const std::string &action)
+{
+   vector<size_t> indices;
+   bool isIndex(false);
+   for(size_t i = 0; i < action.size(); i++)
+   {
+      if (action.at(i) == '$') 
+      {
+         if (isIndex)
+         {
+            indices.push_back(_LeftIndex);
+            isIndex = false;
+         }
+         else
+            isIndex = true;
+            continue;
+      }
+      else if(isIndex)
+      {
+         const size_t comma = action.find_first_of(',', i);
+         const size_t rParen = action.find_first_of(')', i);
+         const size_t numBytes = (comma < rParen ? comma : rParen) - i;
+         const string num(action.substr(i, numBytes));
+         indices.push_back(_RightIndex + boost::lexical_cast<size_t>(num) -1);
+         isIndex = false;
+      }
+   }
+   if (Debug)
+   {
+      cout << "Indices for : " << action << " is ";
+      std::copy(indices.begin(), indices.end(), std::ostream_iterator<size_t>(std::cout, ","));
+      cout << endl;
+   }
+   return indices;
+
+}
+
+const string &MicroCompiler::_GetSemanticStackValue(const size_t index)
+{
+   deque<string>::iterator itr = _SemanticStack.end() - index;
+   return *itr;
 }

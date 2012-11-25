@@ -2,10 +2,10 @@
 <statement_list> <statement><statement_tail>
 <statement_tail> <statement_list>
 <statement_tail> lamda
-<statement> Id := <expression>; #Assign($1,$3)
+<statement> <ident> := <expression>; #Assign($1,$3)
 <statement> read ( <id_list>) ;
 <statement> write( <expression_list> ) ;
-<id_list> <ident> #Read($1) <id_tail>
+<id_list> <ident> #ReadId($1) <id_tail>
 <id_tail> , <id_list>
 <id_tail> lamda
 <expression_list> <expression> #WriteExpr($1) <expression_tail>

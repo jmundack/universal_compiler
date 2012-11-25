@@ -4,7 +4,7 @@
 using namespace std;
 
 const pair<string,size_t> Lamda = make_pair("lamda", 0);
-const bool Debug(true);
+const bool Debug(false);
 
 PredictGenerator::PredictGenerator(const string &filename):_Filename(filename), _Grammer(filename)
 {

@@ -3,6 +3,8 @@
 #include "Token.h"
 #include <vector>
 #include <fstream>
+#include <fstream>
+#include <sstream>
 
 enum ExpressionKind
 {
@@ -11,25 +13,33 @@ enum ExpressionKind
    Temp
 };
 
-class ExpressionRec
+class IRec
+{
+public:
+   virtual ~IRec(){}
+   virtual std::string GetStr() const = 0;
+
+};
+
+class ExpressionRec : public IRec
 {
 public:
    ExpressionRec(){}
    ExpressionRec(const ExpressionKind kind,const std::string &s);
    ExpressionRec(const ExpressionKind kind,const int i);
    const std::string &GetName() const { return _Str; }
-   const std::string &GetStr() const { return _Str; }
+   virtual std::string GetStr() const { return _Str; }
 private:
    ExpressionKind _Kind;
    std::string _Str;
 };
 
-class OperationRec
+class OperationRec : public IRec
 {
 public:
    OperationRec(){}
    OperationRec(const Token token):_Token(token){}
-   std::string GetStr() const;
+   virtual std::string GetStr() const;
 private:
    Token _Token;
 };
@@ -58,6 +68,7 @@ public:
    void ReadID(ExpressionRec e);
    void WriteID(ExpressionRec e);
    ExpressionRec GenerateInFix(ExpressionRec e1, OperationRec op, ExpressionRec e2);
+   std::string GetCodeGenerated() const { return _CodeGenerated.str(); }
 private:
 
    void _Generate(const std::string &s1,
@@ -72,4 +83,5 @@ private:
 
    std::string _Filename;
    std::ofstream _OutFile;
+   std::stringstream _CodeGenerated;
 };
