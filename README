@@ -40,6 +40,11 @@ Assignment 8
 To run Test (file name can be any file in the Test data directory) -- will print out the results
  --> ./build/debug/bin/UCParserDriverTest <MicroGrammer.dat> <program to parse>
 
+Assignment 9
+To run Test (file name can be any file in the Test data directory) -- will print out the results
+ --> ./build/debug/bin/UCMicroCompilerTest <MicroGrammer_w_action_symbols.dat> <program to parse>
+NOTE: ACMicroParserTest and UCMicroCompilerTest should generate the same code for all programs (tested with test programs 1,2,4,5 in test data directory - 3 is an invalid program)
+
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
 
