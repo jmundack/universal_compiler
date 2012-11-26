@@ -5,6 +5,7 @@
 <statement> <ident> := <expression>; #Assign($1,$3)
 <statement> read ( <id_list>) ;
 <statement> write( <expression_list> ) ;
+<statement> begin <statement_list> end
 <id_list> <ident> #ReadId($1) <id_tail>
 <id_tail> , <id_list>
 <id_tail> lamda
