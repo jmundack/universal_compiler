@@ -5,5 +5,8 @@ add_definitions(-Wall -Werror) # enable all warnings and mark warnings as errors
 add_definitions(-O3)  # enable optimizations
 add_definitions(-g)  # enable debugging 
 
+project (compiler)
+include_directories("./include")
+add_subdirectory (Common)
 add_subdirectory (AdHocCompiler)
 add_subdirectory (UniversalCompiler)
