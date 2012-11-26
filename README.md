@@ -1,7 +1,9 @@
 Universal-Compiler
 ==================
 
-CSCI 5640 - Universal CompilerHow to build:
+CSCI 5640 - Universal Compiler
+
+How to build:
  --> cd build
  --> ./bootstrap.sh
 
