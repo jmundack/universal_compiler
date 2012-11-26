@@ -1,4 +1,4 @@
 include_directories (../include/)
 
-add_library (ACGenerator Generator.h Generator.cpp)
-INSTALL(TARGETS ACGenerator ARCHIVE DESTINATION lib)
+add_library (Generator Generator.h Generator.cpp SymbolTable.h SymbolTable.cpp)
+INSTALL(TARGETS Generator ARCHIVE DESTINATION lib)

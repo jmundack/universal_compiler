@@ -30,16 +30,6 @@ string OperationRec::GetStr() const
    return s;
 }
 
-bool SymbolTable::Exists(const string &symbol) const 
-{
-   return (find(_Symbols.begin(), _Symbols.end(), symbol) != _Symbols.end());
-}
-
-void SymbolTable::Add(const string &newSymbol)
-{
-   _Symbols.push_back(newSymbol);
-}
-
 Generator::Generator(const string &filename):_TempCount(0), _Filename(filename)
 {
    remove(_Filename.c_str());

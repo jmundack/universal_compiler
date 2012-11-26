@@ -1,6 +1,7 @@
 #pragma once 
 
 #include "Token.h"
+#include "SymbolTable.h"
 #include <vector>
 #include <fstream>
 #include <fstream>
@@ -42,16 +43,6 @@ public:
    virtual std::string GetStr() const;
 private:
    Token _Token;
-};
-
-class SymbolTable
-{
-public:
-   bool Exists(const std::string &symbol) const;
-   void Add(const std::string &newSymbol);
-   void Clear() { _Symbols.clear(); }
-private:
-   std::vector<std::string> _Symbols;
 };
 
 class Generator
