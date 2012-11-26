@@ -4,6 +4,7 @@
 #include <stack>
 #include <sstream>
 #include <algorithm>
+#include <iterator>
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
