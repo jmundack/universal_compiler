@@ -50,6 +50,10 @@ To run Test (file name can be any file in the Test data directory) -- will print
  --> ./build/debug/bin/UCMicroCompilerTest <MicroGrammer_w_action_symbols.dat> <program to parse>
 NOTE: ACMicroParserTest and UCMicroCompilerTest should generate the same code for all programs (tested with test programs 1,2,4,5 in test data directory - 3 is an invalid program)
 
+Assignment 11
+To run Test (file name can be any file in the Test data directory) -- will print out the results (compiled code or error if there were errors)
+ --> ./build/debug/bin/ACMicroParserTest <program to parse>
+
 Updated source code can be retrieved from
 git://github.com/jmundack/universal_compiler.git
 
