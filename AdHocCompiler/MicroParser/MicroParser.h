@@ -4,6 +4,7 @@
 #include "Generator.h"
 #include <map>
 #include <functional>
+#include <sstream>
 
 class MicroParser
 {
@@ -26,7 +27,8 @@ private:
    void _PrintValidation();
    void _PrintGeneratedCode();
 
-   void _CheckInput(const Tokens &validSet, 
+   void _CheckInput(const std::string &name,
+                    const Tokens &validSet, 
                     const Tokens &followSet,
                     const Tokens &heaserSet);
                   
@@ -37,4 +39,5 @@ private:
    Tracker _Tracker;
    Scanner _Scanner;
    Generator _Generator;
+   std::stringstream _Errors;
 };
