@@ -23,6 +23,7 @@ public:
    Token GetNextToken() const { return _NextToken; }
    void ReadNextToken();
    const std::string &GetBuffer() const { return _Buffer; }
+   void SetNextToken(const Token token) { _NextToken = token; }
 private:
    /**
     * \brief Helper function to convert a string to a token
