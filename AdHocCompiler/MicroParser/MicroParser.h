@@ -26,6 +26,11 @@ private:
    void _PrintValidation();
    void _PrintGeneratedCode();
 
+   void _CheckInput(const Tokens &validSet, 
+                    const Tokens &followSet,
+                    const Tokens &heaserSet);
+                  
+
    typedef std::map<std::string, std::deque<std::string> > Tracker;
    std::string _Filename;
    bool _StateValid;

@@ -1,5 +1,6 @@
 #include "MicroParser.h"
 #include <iostream>
+#include <algorithm>
 #include <stdlib.h>
 
 using namespace std;
@@ -76,10 +77,20 @@ void MicroParser::_Match(const Token legalToken)
    if (_Scanner.GetNextToken() != legalToken)
    {
       cerr << "Failed to match token expected : "<< legalToken << " but got " << _Scanner.GetNextToken() << "instead " << endl;
-      _StateValid = false;
+      if (legalToken == EofSym || legalToken == SemiColon)
+      {
+         while (legalToken != _Scanner.GetNextToken())
+         {
+            cout << "Skipping token : " << _Scanner.GetNextToken() << endl;
+            _Scanner.ReadNextToken();
+         }
+      }
+      else
+         _StateValid = false;
    }
+   else
+      _Scanner.ReadNextToken();
    cout << "Legal Token : " << legalToken << endl;
-   _Scanner.ReadNextToken();
 }
 
 void MicroParser::_SystemGoal()
@@ -98,6 +109,7 @@ void MicroParser::_Program()
    cout << " Parsing program" << endl;
    _Tracker["<program>"].push_back("begin <statement_list> end");
    _Generator.Start();
+   _CheckInput(Tokens(1,BeginSym), Tokens(1,EofSym), Tokens(1,EofSym));
    _Match(BeginSym);
    _StatementList();
    _Match(EndSym);
@@ -108,6 +120,11 @@ void MicroParser::_StatementList()
    if (!_StateValid) return;
    cout << " Parsing statement_list" << endl;
    const size_t pos = _Tracker["<statement_list>"].size();
+   Tokens validSet;
+   validSet.push_back(Id);
+   validSet.push_back(ReadSym);
+   validSet.push_back(WriteSym);
+   _CheckInput(validSet, Tokens(1,EndSym), Tokens(1,EofSym));
    _Statement();
    string s = "<statement>";
    switch(_Scanner.GetNextToken())
@@ -129,6 +146,12 @@ void MicroParser::_Statement()
    if (!_StateValid) return;
    cout << " Parsing statement" << endl;
    const size_t pos = _Tracker["<statement>"].size();
+
+   Tokens validSet;
+   validSet.push_back(Id);
+   validSet.push_back(ReadSym);
+   validSet.push_back(WriteSym);
+   _CheckInput(validSet, Tokens(1,EndSym), Tokens(1,EofSym));
    string s;
    ExpressionRec source, target;
    switch(_Scanner.GetNextToken())
@@ -170,6 +193,7 @@ void MicroParser::_IdList()
    if (!_StateValid) return;
    cout << " Parsing id_list" << endl;
    const size_t pos = _Tracker["<id_list>"].size();
+   _CheckInput(Tokens(1,Id), Tokens(1,RParen), Tokens(1,EofSym));
    ExpressionRec identifier;
    _Ident(identifier);
    _Generator.ReadID(identifier);
@@ -188,6 +212,11 @@ void MicroParser::_ExpressionList()
    if (!_StateValid) return;
    cout << " Parsing expression_list" << endl;
    const size_t pos = _Tracker["<expression_list>"].size();
+   Tokens validSet;
+   validSet.push_back(Id);
+   validSet.push_back(IntLiteral);
+   validSet.push_back(LParen);
+   _CheckInput(validSet, Tokens(1,RParen), Tokens(1,EofSym));
    ExpressionRec e;
    _Expression(e);
    _Generator.WriteID(e);
@@ -206,6 +235,15 @@ void MicroParser::_Expression(ExpressionRec &e)
    if (!_StateValid) return;
    cout << " Parsing expression -- next token : " << _Scanner.GetNextToken() << endl;
    const size_t pos = _Tracker["<expression>"].size();
+
+   Tokens validSet,followSet;
+   validSet.push_back(Id);
+   validSet.push_back(IntLiteral);
+   validSet.push_back(LParen);
+   followSet.push_back(Comma);
+   followSet.push_back(SemiColon);
+   followSet.push_back(RParen);
+   _CheckInput(validSet, followSet, Tokens(1,EndSym));
   
    ExpressionRec e1, e2;
    OperationRec op;
@@ -232,6 +270,17 @@ void MicroParser::_Primary(ExpressionRec &e)
    if (!_StateValid) return;
    cout << " Parsing primary" << endl;
    const size_t pos = _Tracker["<primary>"].size();
+   Tokens validSet,followSet;
+   validSet.push_back(Id);
+   validSet.push_back(IntLiteral);
+   validSet.push_back(LParen);
+   followSet.push_back(Comma);
+   followSet.push_back(SemiColon);
+   followSet.push_back(RParen);
+   followSet.push_back(PlusOp);
+   followSet.push_back(MinusOp);
+   _CheckInput(validSet, followSet, Tokens(1,EndSym));
+ 
    string s;
    switch(_Scanner.GetNextToken())
    {
@@ -263,6 +312,11 @@ void MicroParser::_Ident(ExpressionRec &e)
    if (!_StateValid) return;
    cout << " Parsing ident" << endl;
    _Tracker["<ident>"].push_back("Id");
+   Tokens followSet;
+   followSet.push_back(Comma);
+   followSet.push_back(SemiColon);
+   followSet.push_back(RParen);
+   _CheckInput(Tokens(1,Id), followSet, Tokens(1,EofSym));
    _Generator.ProcessID(_Scanner.GetBuffer(), e);
    _Match(Id);
 }
@@ -270,6 +324,12 @@ void MicroParser::_Ident(ExpressionRec &e)
 void MicroParser::_AddOp(OperationRec &op)
 {
    cout << " Parsing add_op" << endl;
+   Tokens validSet,followSet;
+   validSet.push_back(PlusOp);
+   validSet.push_back(MinusOp);
+   followSet.push_back(LParen);
+   followSet.push_back(Id);
+   followSet.push_back(IntLiteral);
    switch (_Scanner.GetNextToken())
    {
       case PlusOp:
@@ -286,5 +346,25 @@ void MicroParser::_AddOp(OperationRec &op)
          cerr << "fail -- expected PlusOp | MinusOp but got " << _Scanner.GetNextToken() << endl;
          _StateValid = false;
          break;
+   }
+}
+
+
+void MicroParser::_CheckInput(const Tokens &validSet, 
+                              const Tokens &followSet,
+                              const Tokens &heaserSet)
+{
+   Token nextToken(_Scanner.GetNextToken());
+   if (find(validSet.begin(), validSet.end(), nextToken) == validSet.end())
+   {
+      cout << "Invalid Token : " << nextToken << endl;
+      Tokens t(validSet);
+      merge(followSet.begin(), followSet.end(), heaserSet.begin(), heaserSet.end(), t.begin());
+      while(find(t.begin(), t.end(), nextToken) == t.end())
+      {
+         cout << "Skipping token : " << nextToken << endl;
+         _Scanner.ReadNextToken();
+         nextToken = _Scanner.GetNextToken();
+      }
    }
 }
