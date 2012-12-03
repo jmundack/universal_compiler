@@ -54,6 +54,7 @@ void MicroCompiler::_PrintBlock(const string &action, const string &remainingInp
    std::copy(_SemanticStack.begin(), _SemanticStack.end(), std::ostream_iterator<string>(std::cout, " "));
    cout << endl;
    cout << "---> Indices : Left(" << _LeftIndex << ") right (" << _RightIndex << ") current(" << _CurrentIndex << ") top(" << _TopIndex << ")" << endl; 
+   _CodeGenerator.PrintSymbols();
    cout << "---> Code Generates : " << endl;
    cout << _CodeGenerator.GetCodeGenerated() << endl;
    cout << "******************************************" << endl;
@@ -129,12 +130,10 @@ void MicroCompiler::Parse()
          const Symbols &terminalSymbols(p.GetTerminalSymbols());
          if (terminalSymbols.find(topSymbol) != terminalSymbols.end() || topSymbol == "lamda")
          {
-            /*
-            if (topSymbol != _Scanner.GetNextToken())
-            {
-               cerr << "Synatx Error -- expected : " << topSymbol << " but got " << _Scanner.GetNextToken() << endl;
-               return;
-            }*/
+            if (topSymbol == "begin")
+               _CodeGenerator.Begin();
+            else if (topSymbol == "end")
+               _CodeGenerator.End();
             action = "Term : " + _ParseStack.front();
             if (topSymbol != "lamda")
             {

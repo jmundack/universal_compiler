@@ -49,8 +49,11 @@ class Generator
 {
 public:
    Generator(const std::string &filename);
+   void PrintSymbols() { _SymbolTable.Print(); }
    void Start();
    void Finish();
+   void Begin() { _SymbolTable.Begin(); }
+   void End() { _SymbolTable.End(); }
 
    void Assign(ExpressionRec source, ExpressionRec target);
    void ProcessID(const std::string &name, ExpressionRec &e);
